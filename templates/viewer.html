@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ novel.title }}{% endblock %}
+
+{% block content %}
+<div class="novel-viewer">
+    <h1>{{ novel.title }}</h1>
+    <div class="scene-container">
+        {% for scene in scenes %}
+            <div class="scene">
+                {% if scene.background %}
+                    <div class="scene-background">
+                        <img src="{{ scene.background }}" alt="Фон сцены">
+                    </div>
+                {% endif %}
+                <div class="scene-text">
+                    {{ scene.text }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="navigation">
+        <button onclick="prevScene()">← Назад</button>
+        <button onclick="nextScene()">Вперёд →</button>
+    </div>
+</div>
+<script>
+let currentScene = 0;
+const scenes = document.querySelectorAll('.scene');
+
+function showScene(index) {
+    scenes.forEach(scene => scene.style.display = 'none');
+    if (scenes[index]) {
+        scenes[index].style.display = 'block';
+    }
+}
+
+function nextScene() {
+    if (currentScene < scenes.length - 1) {
+        currentScene++;
+        showScene(currentScene);
+    }
+}
+
+function prevScene() {
+    if (currentScene > 0) {
+        currentScene--;
+        showScene(currentScene);
+    }
+}
+
+// Показываем первую сцену при загрузке
+showScene(0);
+</script>
+{% endblock %}

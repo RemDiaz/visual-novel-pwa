@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Конструктор новелл{% endblock %}
+
+{% block content %}
+<h2>Конструктор визуальных новелл</h2>
+<div id="builder">
+    <div class="scene-editor">
+        <h3>Редактор сцены</h3>
+        <label>Фон: <input type="text" id="background" placeholder="URL фона"></label><br>
+        <label>Текст: <textarea id="scene-text" placeholder="Текст сцены"></textarea></label><br>
+        <button onclick="saveScene()">Сохранить сцену</button>
+    </div>
+    <div class="preview">
+        <h3>Предпросмотр</h3>
+        <div id="preview-scene"></div>
+    </div>
+</div>
+<script>
+function saveScene() {
+    const data = {
+        novel_id: 1, // временно
+        background: document.getElementById('background').value,
+        text: document.getElementById('scene-text').value,
+        order: 1
+    };
+    fetch('/api/save_scene', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    }).then(res => res.json())
+      .then(data => alert('Сцена сохранена!'));
+}
+</script>
+{% endblock %}

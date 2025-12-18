@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<h2>Личный кабинет</h2>
+<form method="POST" action="/profile">
+    <div>
+        <label>Никнейм:</label>
+        <input type="text" name="nickname" value="{{ user.nickname }}" required>
+    </div>
+    <div>
+        <label>Email:</label>
+        <input type="email" value="{{ user.email }}" disabled>
+    </div>
+    <div>
+        <label>Телефон:</label>
+        <input type="text" name="phone" value="{{ user.phone or '' }}">
+    </div>
+    <div>
+        <label>Язык интерфейса:</label>
+        <select name="language">
+            <option value="RU" {% if user.language == 'RU' %}selected{% endif %}>Русский</option>
+            <option value="EN" {% if user.language == 'EN' %}selected{% endif %}>English</option>
+        </select>
+    </div>
+    <button type="submit">Сохранить изменения</button>
+</form>
+<h3>Мои новеллы</h3>
+<ul>
+    <!-- Здесь будет список новелл пользователя -->
+    <li>Новелла 1</li>
+    <li>Новелла 2</li>
+</ul>
+{% endblock %}

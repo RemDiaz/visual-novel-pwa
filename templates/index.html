@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<h1>Доступные новеллы</h1>
+<div class="novel-list">
+    {% for novel in novels %}
+        <div class="novel-card">
+            <h3>{{ novel.title }}</h3>
+            <a href="/view/{{ novel.id }}">Читать</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
