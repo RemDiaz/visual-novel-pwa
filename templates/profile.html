@@ -3,33 +3,155 @@
 {% block title %}Профиль{% endblock %}
 
 {% block content %}
-<h2>Личный кабинет</h2>
-<form method="POST" action="/profile">
-    <div>
-        <label>Никнейм:</label>
-        <input type="text" name="nickname" value="{{ user.nickname }}" required>
+<div class="profile-container">
+    <h2 style="color: #4f46e5; margin-bottom: 2rem;">Личный кабинет</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Основная информация -->
+    <div class="profile-section">
+        <h3>Основная информация</h3>
+        <form method="POST" action="/profile">
+            <div class="form-group">
+                <label class="form-label">Никнейм:</label>
+                <input type="text" name="nickname" value="{{ user.nickname }}" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email:</label>
+                <input type="email" value="{{ user.email }}" disabled class="form-control">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    <a href="#change-email" style="color: #4f46e5; text-decoration: none;">Изменить email</a>
+                </small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Телефон:</label>
+                <input type="text" name="phone" value="{{ user.phone or '' }}" class="form-control">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    <a href="#change-phone" style="color: #4f46e5; text-decoration: none;">Изменить телефон</a>
+                </small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Язык интерфейса:</label>
+                <select name="language" class="form-control">
+                    <option value="RU" {% if user.language == 'RU' %}selected{% endif %}>Русский</option>
+                    <option value="EN" {% if user.language == 'EN' %}selected{% endif %}>English</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        </form>
     </div>
-    <div>
-        <label>Email:</label>
-        <input type="email" value="{{ user.email }}" disabled>
+    
+    <!-- Смена пароля -->
+    <div class="profile-section" id="change-password">
+        <h3>Смена пароля</h3>
+        <form method="POST" action="/change_password">
+            <div class="form-group">
+                <label class="form-label">Текущий пароль:</label>
+                <input type="password" name="old_password" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Новый пароль:</label>
+                <input type="password" name="new_password" required minlength="6" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Подтвердите новый пароль:</label>
+                <input type="password" name="confirm_password" required minlength="6" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Сменить пароль</button>
+        </form>
     </div>
-    <div>
-        <label>Телефон:</label>
-        <input type="text" name="phone" value="{{ user.phone or '' }}">
+    
+    <!-- Смена email -->
+    <div class="profile-section" id="change-email">
+        <h3>Смена Email</h3>
+        <form method="POST" action="/change_email">
+            <div class="form-group">
+                <label class="form-label">Новый Email:</label>
+                <input type="email" name="new_email" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Текущий пароль:</label>
+                <input type="password" name="password" required class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Сменить Email</button>
+        </form>
     </div>
-    <div>
-        <label>Язык интерфейса:</label>
-        <select name="language">
-            <option value="RU" {% if user.language == 'RU' %}selected{% endif %}>Русский</option>
-            <option value="EN" {% if user.language == 'EN' %}selected{% endif %}>English</option>
-        </select>
+    
+    <!-- Смена телефона -->
+    <div class="profile-section" id="change-phone">
+        <h3>Смена телефона</h3>
+        <form method="POST" action="/change_phone">
+            <div class="form-group">
+                <label class="form-label">Новый телефон:</label>
+                <input type="text" name="new_phone" value="{{ user.phone or '' }}" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Сменить телефон</button>
+        </form>
     </div>
-    <button type="submit">Сохранить изменения</button>
-</form>
-<h3>Мои новеллы</h3>
-<ul>
-    <!-- Здесь будет список новелл пользователя -->
-    <li>Новелла 1</li>
-    <li>Новелла 2</li>
-</ul>
+</div>
+
+<style>
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.profile-section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.profile-section h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 2px solid #4f46e5;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.btn-primary {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #4338ca;
+}
+</style>
 {% endblock %}

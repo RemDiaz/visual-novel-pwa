@@ -6,7 +6,6 @@ import os
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import event
 
-
 db = SQLAlchemy()
 
 class User(UserMixin, db.Model):
@@ -41,34 +40,57 @@ class Scene(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     novel_id = db.Column(db.Integer, db.ForeignKey('novel.id'), nullable=False)
+    name = db.Column(db.String(100), default='')
     background = db.Column(db.String(200), default='')
     text = db.Column(db.Text, default='')
     order = db.Column(db.Integer, default=0)
-    _choices = db.Column('choices', db.Text, default='[]')  # Переименуем поле
+    choices = db.Column(db.Text, default='[]')
+    sprites = db.Column(db.Text, default='[]')
     
-    # Свойство для работы с choices как со списком
-    @hybrid_property
-    def choices(self):
-        if self._choices and self._choices != '[]':
+    # Свойства для удобной работы с JSON данными
+    @property
+    def choices_list(self):
+        """Возвращает choices как список Python"""
+        if self.choices and self.choices != '[]':
             try:
-                return json.loads(self._choices)
-            except (json.JSONDecodeError, TypeError):
+                return json.loads(self.choices)
+            except:
                 return []
         return []
     
-    @choices.setter
-    def choices(self, value):
+    @choices_list.setter
+    def choices_list(self, value):
+        """Устанавливает choices из списка Python"""
         if isinstance(value, list):
-            self._choices = json.dumps(value, ensure_ascii=False)
-        elif isinstance(value, str):
-            # Проверяем, является ли строка валидным JSON
-            try:
-                json.loads(value)  # Проверка валидности
-                self._choices = value
-            except (json.JSONDecodeError, TypeError):
-                self._choices = '[]'
+            self.choices = json.dumps(value, ensure_ascii=False)
         else:
-            self._choices = '[]'
+            self.choices = '[]'
+    
+    @property
+    def sprites_list(self):
+        """Возвращает sprites как список Python"""
+        if self.sprites and self.sprites != '[]':
+            try:
+                sprites = json.loads(self.sprites)
+                # Гарантируем наличие isOnCanvas
+                if isinstance(sprites, list):
+                    for sprite in sprites:
+                        if isinstance(sprite, dict):
+                            sprite['isOnCanvas'] = sprite.get('isOnCanvas', True)
+                return sprites
+            except:
+                return []
+        return []
+    
+    @sprites_list.setter
+    def sprites_list(self, value):
+        """Устанавливает sprites из списка Python"""
+        if isinstance(value, list):
+            # Фильтруем только спрайты на холсте
+            canvas_sprites = [s for s in value if s.get('isOnCanvas', True)]
+            self.sprites = json.dumps(canvas_sprites, ensure_ascii=False)
+        else:
+            self.sprites = '[]'
 
 # Добавляем обработчик событий для автоматического преобразования
 @event.listens_for(Scene, 'before_insert')
@@ -76,9 +98,14 @@ class Scene(db.Model):
 def before_scene_save(mapper, connection, target):
     """Автоматически преобразуем choices в JSON при сохранении"""
     if hasattr(target, '_choices'):
-        # Если choices установлено через сеттер, оно уже преобразовано
-        # Но на всякий случай проверим
         if isinstance(target._choices, list):
             target._choices = json.dumps(target._choices, ensure_ascii=False)
         elif target._choices is None:
             target._choices = '[]'
+    
+    if hasattr(target, '_sprites'):
+        if isinstance(target._sprites, list):
+            target._sprites = json.dumps(target._sprites, ensure_ascii=False)
+        elif target._sprites is None:
+            target._sprites = '[]'
+

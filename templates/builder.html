@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/builder.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/advanced-builder.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -28,41 +29,82 @@
         </div>
     {% else %}
         <!-- Основной конструктор -->
-        <div class="builder-container">
+        <div class="advanced-builder">
             <!-- Шапка конструктора -->
-            <div class="builder-header">
-                <h2 id="novel-title-display">{{ novel.title }}</h2>
-                <div class="builder-controls">
-                    <button onclick="saveNovel()" class="btn btn-primary" id="save-btn">
+            <div class="builder-header-advanced">
+                <div class="header-left">
+                    <h2 id="novel-title-display">{{ novel.title }}</h2>
+                    <small>Редактор визуальной новеллы</small>
+                </div>
+                <div class="header-right">
+                    <button id="save-btn" class="btn btn-primary">
                         💾 Сохранить
                     </button>
-                    <button onclick="previewNovel()" class="btn btn-secondary">
+                    <button id="preview-btn" class="btn btn-secondary">
                         👁️ Предпросмотр
                     </button>
-                    <button onclick="addNewScene()" class="btn btn-success">
+                    <button id="add-scene-btn" class="btn btn-success">
                         ➕ Новая сцена
                     </button>
                 </div>
             </div>
 
             <!-- Основная область -->
-            <div class="builder-main">
+            <div class="builder-main-advanced">
                 <!-- Боковая панель со сценами -->
-                <div class="scenes-sidebar">
+                <div class="scenes-panel">
                     <h3>Сцены</h3>
-                    <div class="scene-list" id="scene-list">
+                    <div class="scene-list-advanced" id="scene-list">
                         <!-- Сцены будут добавляться здесь -->
                     </div>
-                    <button onclick="addNewScene()" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">
+                    <button id="add-scene-btn-bottom" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">
                         ➕ Добавить сцену
                     </button>
                 </div>
 
-                <!-- Основной редактор -->
-                <div class="editor-main">
+                <!-- Центральная область - Визуальный редактор -->
+                <div class="visual-editor">
+                    <div class="editor-container">
+                        <!-- Инструменты редактора -->
+                        <div class="editor-tools">
+                            <button class="tool-btn" data-tool="select" title="Выделение">
+                                <span class="tool-icon">↖️</span>
+                            </button>
+                            <button class="tool-btn" data-tool="move" title="Перемещение">
+                                <span class="tool-icon">✋</span>
+                            </button>
+                            <button class="tool-btn" data-tool="delete" title="Удаление">
+                                <span class="tool-icon">🗑️</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Холст сцены -->
+                        <div class="scene-canvas" id="scene-canvas">
+                            <!-- Фон сцены -->
+                            <div id="canvas-background"></div>
+                            
+                            <!-- Спрайты будут добавляться здесь -->
+                            <div id="sprites-container"></div>
+                            
+                            <!-- Подсказка при пустом холсте -->
+                            <div id="canvas-hint">
+                                <p>🖼️ Загрузите фон или перетащите спрайт</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая панель - Редактор и загрузка -->
+                <div class="properties-panel">
                     <!-- Редактор сцены -->
-                    <div class="scene-editor">
-                        <h3>Редактор сцены <span id="current-scene-number"></span></h3>
+                    <div class="scene-editor-section">
+                        <h3>Свойства сцены</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Название сцены:</label>
+                            <input type="text" id="scene-name" class="form-control" 
+                                   placeholder="Введите название сцены...">
+                        </div>
                         
                         <div class="form-group">
                             <label class="form-label">Текст сцены:</label>
@@ -70,38 +112,62 @@
                                       placeholder="Опишите, что происходит в этой сцене..."></textarea>
                         </div>
                         
-                        <div class="form-group">
-                            <label class="form-label">Фоновое изображение (URL):</label>
-                            <input type="text" id="scene-background" class="form-control" 
-                                   placeholder="https://example.com/image.jpg">
-                            <small class="text-muted">Можно оставить пустым</small>
+                        <!-- Загрузка фона -->
+                        <div class="upload-section">
+                            <h4>Фон сцены</h4>
+                            
+                            <div class="upload-area" id="background-upload-area">
+                                <div class="upload-icon">🖼️</div>
+                                <div class="upload-text">Перетащите изображение или кликните</div>
+                                <div class="upload-hint">JPG, PNG, GIF (до 5MB)</div>
+                            </div>
+                            
+                            <input type="file" id="background-file" accept="image/*" class="file-input">
+                            
+                            <div id="background-preview" style="margin-top: 10px;"></div>
                         </div>
                         
-                        <button onclick="saveCurrentScene()" class="btn btn-primary">
+                        <!-- Управление спрайтами -->
+                        <div class="sprites-section">
+                            <h4>Спрайты персонажей</h4>
+                            
+                            <div class="upload-area" id="sprite-upload-area">
+                                <div class="upload-icon">🧍</div>
+                                <div class="upload-text">Добавить спрайт персонажа</div>
+                                <div class="upload-hint">Перетащите или выберите файл</div>
+                            </div>
+                            
+                            <input type="file" id="sprite-file" accept="image/*" multiple class="file-input">
+                            
+                            <!-- Список доступных спрайтов -->
+                            <div class="sprites-panel">
+                                <div class="sprites-header">
+                                    <h5>Доступные спрайты</h5>
+                                    <small>Перетащите на сцену</small>
+                                </div>
+                                <div class="sprites-list" id="sprites-list">
+                                    <!-- Спрайты будут здесь -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Редактор выборов -->
+                        <div class="choices-section" style="margin-top: 20px;">
+                            <h4>Варианты выбора</h4>
+                            <p class="text-muted">Добавьте варианты, которые увидит читатель в конце этой сцены</p>
+                            
+                            <div id="choices-list">
+                                <!-- Варианты выбора будут здесь -->
+                            </div>
+                            
+                            <button id="add-choice-btn" class="btn btn-success" style="margin-top: 10px; width: 100%;">
+                                ➕ Добавить вариант выбора
+                            </button>
+                        </div>
+                        
+                        <button id="save-scene-btn" class="btn btn-primary" style="margin-top: 20px; width: 100%;">
                             💾 Сохранить сцену
                         </button>
-                    </div>
-
-                    <!-- Редактор выборов -->
-                    <div class="choices-editor">
-                        <h3>Варианты выбора</h3>
-                        <p class="text-muted">Добавьте варианты, которые увидит читатель в конце этой сцены</p>
-                        
-                        <div id="choices-list">
-                            <!-- Варианты выбора будут здесь -->
-                        </div>
-                        
-                        <button onclick="addNewChoice()" class="btn btn-success" style="margin-top: 15px;">
-                            ➕ Добавить вариант выбора
-                        </button>
-                    </div>
-
-                    <!-- Предпросмотр сцены -->
-                    <div class="scene-preview-box">
-                        <h4>Предпросмотр сцены:</h4>
-                        <div id="scene-preview-content">
-                            <em>Выберите сцену для предпросмотра</em>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -139,7 +205,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <button onclick="publishNovel()" class="btn btn-success" id="publish-btn">
+                        <button id="publish-btn" class="btn btn-success">
                             {% if novel.is_published %}✅ Опубликовано{% else %}📢 Опубликовать{% endif %}
                         </button>
                         <small class="text-muted" style="display: block; margin-top: 5px;">
@@ -154,630 +220,16 @@
 
 <!-- Уведомления будут здесь -->
 <div id="notification-area"></div>
+<div id="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
+</div>
 
 <!-- Передаем только ID новеллы, остальное загрузим через API -->
 <div id="novel-data" data-novel-id="{{ novel.id if novel else 0 }}" style="display: none;"></div>
 
-<script>
-// Глобальные переменные
-let currentNovelId = document.getElementById('novel-data') ? 
-    parseInt(document.getElementById('novel-data').getAttribute('data-novel-id')) : 0;
-let scenes = [];
-let currentSceneIndex = -1;
-let choices = [];
+{% endblock %}
 
-// Загрузка данных при открытии
-document.addEventListener('DOMContentLoaded', function() {
-    if (currentNovelId && currentNovelId > 0) {
-        loadNovelData();
-    } else if (currentNovelId === 0 && window.location.pathname.includes('/builder/')) {
-        // Если открыт редактор без ID, перенаправляем
-        window.location.href = '/builder';
-    }
-});
-
-// Загрузка данных новеллы через AJAX
-async function loadNovelData() {
-    try {
-        showLoading();
-        
-        const response = await fetch(`/api/novel/${currentNovelId}`);
-        if (!response.ok) {
-            throw new Error('Ошибка загрузки данных');
-        }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            showNotification('❌ Ошибка загрузки: ' + data.error, 'error');
-            return;
-        }
-        
-        // Загружаем сцены
-        scenes = data.scenes || [];
-        
-        // Обновляем UI
-        updateNovelTitle(data.title);
-        document.getElementById('novel-title').value = data.title || '';
-        document.getElementById('novel-description').value = data.description || '';
-        document.getElementById('novel-published').checked = data.is_published || false;
-        updatePublishStatus(data.is_published);
-        
-        // Рендерим сцены
-        renderSceneList();
-        
-        // Если есть сцены, показываем первую
-        if (scenes.length > 0) {
-            selectScene(0);
-        } else {
-            // Создаем первую сцену автоматически
-            addNewScene();
-        }
-        
-    } catch (error) {
-        console.error('Ошибка загрузки:', error);
-        showNotification('❌ Не удалось загрузить данные новеллы', 'error');
-    } finally {
-        hideLoading();
-    }
-}
-
-// Добавление новой сцены
-function addNewScene() {
-    const newScene = {
-        id: 'scene_' + Date.now(), // Временный ID
-        text: '',
-        background: '',
-        order: scenes.length,
-        choices: []
-    };
-    
-    scenes.push(newScene);
-    renderSceneList();
-    selectScene(scenes.length - 1);
-    
-    // Фокус на поле текста
-    setTimeout(() => {
-        document.getElementById('scene-text').focus();
-    }, 100);
-}
-
-// Выбор сцены
-function selectScene(index) {
-    if (index < 0 || index >= scenes.length) return;
-    
-    // Снимаем выделение со всех сцен
-    document.querySelectorAll('.scene-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // Выделяем выбранную сцену
-    const sceneItems = document.querySelectorAll('.scene-item');
-    if (sceneItems[index]) {
-        sceneItems[index].classList.add('active');
-    }
-    
-    currentSceneIndex = index;
-    const scene = scenes[index];
-    
-    // Заполняем форму редактора
-    document.getElementById('current-scene-number').textContent = `(Сцена ${index + 1})`;
-    document.getElementById('scene-text').value = scene.text || '';
-    document.getElementById('scene-background').value = scene.background || '';
-    
-    // Загружаем варианты выбора
-    choices = Array.isArray(scene.choices) ? scene.choices : [];
-    renderChoicesList();
-    
-    // Обновляем предпросмотр
-    updateScenePreview();
-}
-
-// Сохранение текущей сцены
-function saveCurrentScene() {
-    if (currentSceneIndex === -1) {
-        showNotification('⚠️ Сначала выберите или создайте сцену', 'info');
-        return;
-    }
-    
-    const scene = scenes[currentSceneIndex];
-    scene.text = document.getElementById('scene-text').value;
-    scene.background = document.getElementById('scene-background').value;
-    scene.choices = [...choices]; // Копируем текущие варианты
-    
-    // Обновляем отображение в списке
-    renderSceneList();
-    updateScenePreview();
-    
-    showNotification('✅ Сцена сохранена!', 'success');
-}
-
-// Добавление нового варианта выбора
-function addNewChoice() {
-    if (currentSceneIndex === -1) {
-        showNotification('⚠️ Сначала выберите или создайте сцену', 'info');
-        return;
-    }
-    
-    const newChoice = {
-        id: 'choice_' + Date.now(),
-        text: '',
-        nextScene: scenes.length > 1 ? 2 : 1 // По умолчанию ведет на вторую сцену или первую
-    };
-    
-    choices.push(newChoice);
-    renderChoicesList();
-}
-
-// Удаление варианта выбора
-function deleteChoice(index) {
-    if (confirm('Удалить этот вариант выбора?')) {
-        choices.splice(index, 1);
-        renderChoicesList();
-    }
-}
-
-// Рендеринг списка сцен
-function renderSceneList() {
-    const sceneList = document.getElementById('scene-list');
-    if (!sceneList) return;
-    
-    sceneList.innerHTML = '';
-    
-    // Сортируем сцены по порядку
-    scenes.sort((a, b) => (a.order || 0) - (b.order || 0));
-    
-    scenes.forEach((scene, index) => {
-        const sceneElement = document.createElement('div');
-        sceneElement.className = `scene-item ${index === currentSceneIndex ? 'active' : ''}`;
-        sceneElement.onclick = () => selectScene(index);
-        
-        const previewText = scene.text ? 
-            (scene.text.length > 50 ? scene.text.substring(0, 50) + '...' : scene.text) :
-            '<em>Нет текста</em>';
-        
-        const choiceCount = Array.isArray(scene.choices) ? scene.choices.length : 0;
-        
-        sceneElement.innerHTML = `
-            <div class="scene-item-header">
-                <span class="scene-number">Сцена ${index + 1}</span>
-                <button onclick="event.stopPropagation(); deleteScene(${index})" class="btn btn-sm btn-danger">
-                    ✕
-                </button>
-            </div>
-            <div class="scene-preview-text">
-                ${escapeHtml(previewText)}
-            </div>
-            ${choiceCount > 0 ? `<small>Вариантов: ${choiceCount}</small>` : ''}
-        `;
-        
-        sceneList.appendChild(sceneElement);
-    });
-}
-
-// Рендеринг списка выборов
-function renderChoicesList() {
-    const choicesList = document.getElementById('choices-list');
-    if (!choicesList) return;
-    
-    choicesList.innerHTML = '';
-    
-    if (choices.length === 0) {
-        choicesList.innerHTML = `
-            <div class="empty-choices">
-                <p>Пока нет вариантов выбора.</p>
-                <p>Читатель увидит только кнопку "Далее".</p>
-            </div>
-        `;
-        return;
-    }
-    
-    choices.forEach((choice, index) => {
-        const choiceElement = document.createElement('div');
-        choiceElement.className = 'choice-item';
-        
-        // Создаем список сцен для выбора
-        let sceneOptions = '';
-        scenes.forEach((scene, sceneIndex) => {
-            const sceneNum = sceneIndex + 1;
-            sceneOptions += `<option value="${sceneNum}" ${choice.nextScene === sceneNum ? 'selected' : ''}>
-                Сцена ${sceneNum}
-            </option>`;
-        });
-        
-        choiceElement.innerHTML = `
-            <div class="choice-header">
-                <strong>Вариант ${index + 1}</strong>
-                <div class="choice-actions">
-                    <button onclick="moveChoiceUp(${index})" class="btn btn-sm btn-secondary" ${index === 0 ? 'disabled' : ''}>
-                        ↑
-                    </button>
-                    <button onclick="moveChoiceDown(${index})" class="btn btn-sm btn-secondary" ${index === choices.length - 1 ? 'disabled' : ''}>
-                        ↓
-                    </button>
-                    <button onclick="deleteChoice(${index})" class="btn btn-sm btn-danger">
-                        ✕
-                    </button>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Текст варианта:</label>
-                <input type="text" class="form-control choice-text" 
-                       value="${escapeHtml(choice.text || '')}" 
-                       placeholder="Что выберет читатель?"
-                       oninput="updateChoiceText(${index}, this.value)">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Ведет на сцену:</label>
-                <select class="form-control choice-next-scene" 
-                        onchange="updateChoiceNextScene(${index}, this.value)">
-                    ${sceneOptions}
-                    <option value="0" ${choice.nextScene === 0 ? 'selected' : ''}>Конец истории</option>
-                </select>
-            </div>
-        `;
-        
-        choicesList.appendChild(choiceElement);
-    });
-}
-
-// Экранирование HTML
-function escapeHtml(text) {
-    if (typeof text !== 'string') return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// Обновление текста варианта
-function updateChoiceText(index, text) {
-    if (choices[index]) {
-        choices[index].text = text;
-    }
-}
-
-// Обновление следующей сцены для варианта
-function updateChoiceNextScene(index, nextScene) {
-    if (choices[index]) {
-        choices[index].nextScene = parseInt(nextScene);
-    }
-}
-
-// Перемещение варианта вверх
-function moveChoiceUp(index) {
-    if (index > 0) {
-        [choices[index], choices[index - 1]] = [choices[index - 1], choices[index]];
-        renderChoicesList();
-    }
-}
-
-// Перемещение варианта вниз
-function moveChoiceDown(index) {
-    if (index < choices.length - 1) {
-        [choices[index], choices[index + 1]] = [choices[index + 1], choices[index]];
-        renderChoicesList();
-    }
-}
-
-// Удаление сцены
-function deleteScene(index) {
-    if (!confirm(`Удалить сцену ${index + 1}? Все варианты выбора в этой сцене будут потеряны.`)) {
-        return;
-    }
-    
-    scenes.splice(index, 1);
-    
-    // Обновляем порядок сцен
-    scenes.forEach((scene, i) => {
-        scene.order = i;
-    });
-    
-    // Обновляем ссылки в вариантах выбора
-    scenes.forEach(scene => {
-        if (scene.choices) {
-            scene.choices.forEach(choice => {
-                if (choice.nextScene > index + 1) {
-                    choice.nextScene--;
-                } else if (choice.nextScene === index + 1) {
-                    choice.nextScene = 0; // Перенаправляем на конец
-                }
-            });
-        }
-    });
-    
-    // Выбираем другую сцену
-    if (scenes.length > 0) {
-        selectScene(Math.max(0, index - 1));
-    } else {
-        addNewScene();
-    }
-    
-    renderSceneList();
-}
-
-// Обновление предпросмотра
-function updateScenePreview() {
-    const preview = document.getElementById('scene-preview-content');
-    const scene = scenes[currentSceneIndex];
-    
-    if (!scene) {
-        preview.innerHTML = '<em>Выберите сцену для предпросмотра</em>';
-        return;
-    }
-    
-    let previewHTML = '';
-    
-    if (scene.background) {
-        previewHTML += `
-            <div style="margin-bottom: 15px;">
-                <img src="${escapeHtml(scene.background)}" alt="Фон" style="max-width: 100%; border-radius: 5px;" 
-                     onerror="this.style.display='none'">
-            </div>
-        `;
-    }
-    
-    previewHTML += `
-        <p style="font-size: 16px; line-height: 1.6;">${scene.text ? escapeHtml(scene.text) : '<em>Текст сцены не добавлен</em>'}</p>
-    `;
-    
-    const currentChoices = Array.isArray(scene.choices) ? scene.choices : [];
-    
-    if (currentChoices.length > 0) {
-        previewHTML += '<div style="margin-top: 20px;"><strong>Варианты выбора:</strong></div>';
-        currentChoices.forEach((choice, index) => {
-            const targetText = choice.nextScene === 0 ? 'Конец истории' : `Сцена ${choice.nextScene}`;
-            previewHTML += `
-                <div style="background: #e9ecef; padding: 10px; margin: 5px 0; border-radius: 5px;">
-                    "${choice.text || 'Не указан текст'}" → ${targetText}
-                </div>
-            `;
-        });
-    } else {
-        previewHTML += '<div style="margin-top: 20px; color: #666;"><em>Вариантов выбора нет. Будет кнопка "Далее"</em></div>';
-    }
-    
-    preview.innerHTML = previewHTML;
-}
-
-// Сохранение всей новеллы
-async function saveNovel() {
-    try {
-        // Сначала сохраняем текущую сцену
-        if (currentSceneIndex !== -1) {
-            saveCurrentScene();
-        }
-        
-        const saveBtn = document.getElementById('save-btn');
-        const originalText = saveBtn.innerHTML;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '⏳ Сохранение...';
-        
-        const novelData = {
-            title: document.getElementById('novel-title').value,
-            description: document.getElementById('novel-description').value,
-            is_published: document.getElementById('novel-published').checked,
-            scenes: scenes.map(scene => ({
-                ...scene,
-                choices: Array.isArray(scene.choices) ? scene.choices : []
-            }))
-        };
-        
-        const response = await fetch(`/api/save_novel/${currentNovelId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(novelData)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showNotification('✅ Новелла сохранена!', 'success');
-            updateNovelTitle(novelData.title);
-            updatePublishStatus(novelData.is_published);
-            
-            // Обновляем кнопку публикации
-            const publishBtn = document.getElementById('publish-btn');
-            publishBtn.innerHTML = novelData.is_published ? '✅ Опубликовано' : '📢 Опубликовать';
-            publishBtn.disabled = novelData.is_published;
-            
-        } else {
-            showNotification('❌ Ошибка: ' + data.error, 'error');
-        }
-        
-    } catch (error) {
-        console.error('Ошибка сохранения:', error);
-        showNotification('❌ Ошибка сети при сохранении', 'error');
-    } finally {
-        const saveBtn = document.getElementById('save-btn');
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '💾 Сохранить';
-    }
-}
-
-// Публикация новеллы
-async function publishNovel() {
-    try {
-        // Сначала сохраняем
-        await saveNovel();
-        
-        const response = await fetch(`/api/publish_novel/${currentNovelId}`, {
-            method: 'POST'
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showNotification('🎉 Новелла опубликована!', 'success');
-            updatePublishStatus(true);
-            document.getElementById('novel-published').checked = true;
-            
-            const publishBtn = document.getElementById('publish-btn');
-            publishBtn.innerHTML = '✅ Опубликовано';
-            publishBtn.disabled = true;
-            
-        } else {
-            showNotification('❌ Ошибка публикации: ' + data.error, 'error');
-        }
-        
-    } catch (error) {
-        console.error('Ошибка публикации:', error);
-        showNotification('❌ Ошибка сети при публикации', 'error');
-    }
-}
-
-// Предпросмотр новеллы
-function previewNovel() {
-    if (currentNovelId) {
-        // Сохраняем перед предпросмотром
-        saveNovel().then(() => {
-            // Открываем предпросмотр в новой вкладке
-            window.open(`/view/${currentNovelId}`, '_blank');
-        }).catch(error => {
-            showNotification('❌ Ошибка при сохранении перед предпросмотром', 'error');
-        });
-    } else {
-        showNotification('❌ Сначала сохраните новеллу', 'error');
-    }
-}
-
-// Вспомогательные функции
-function updateNovelTitle(title) {
-    const titleElement = document.getElementById('novel-title-display');
-    if (titleElement) {
-        titleElement.textContent = title;
-    }
-}
-
-function updatePublishStatus(isPublished) {
-    const badge = document.getElementById('publish-status-badge');
-    if (badge) {
-        badge.textContent = isPublished ? 'Опубликовано' : 'Черновик';
-        badge.className = `status-badge ${isPublished ? 'status-published' : 'status-draft'}`;
-    }
-}
-
-// Показать уведомление
-function showNotification(message, type = 'info') {
-    const notificationArea = document.getElementById('notification-area');
-    if (!notificationArea) return;
-    
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        max-width: 400px;
-    `;
-    
-    notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
-            <span>${message}</span>
-        </div>
-    `;
-    
-    notificationArea.appendChild(notification);
-    
-    // Автоматически скрываем через 3 секунды
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// Показать загрузку
-function showLoading() {
-    let loading = document.getElementById('loading-overlay');
-    if (!loading) {
-        loading = document.createElement('div');
-        loading.id = 'loading-overlay';
-        loading.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        `;
-        loading.innerHTML = `
-            <div class="loading-spinner"></div>
-        `;
-        document.body.appendChild(loading);
-    }
-}
-
-// Скрыть загрузку
-function hideLoading() {
-    const loading = document.getElementById('loading-overlay');
-    if (loading && loading.parentNode) {
-        loading.parentNode.removeChild(loading);
-    }
-}
-
-// Автосохранение при потере фокуса
-document.addEventListener('DOMContentLoaded', function() {
-    const autoSaveFields = [
-        document.getElementById('scene-text'),
-        document.getElementById('scene-background'),
-        document.getElementById('novel-title'),
-        document.getElementById('novel-description')
-    ];
-    
-    autoSaveFields.forEach(field => {
-        if (field) {
-            field.addEventListener('blur', () => {
-                if (currentSceneIndex !== -1) {
-                    setTimeout(saveCurrentScene, 100);
-                }
-            });
-        }
-    });
-});
-
-// Добавляем стили для анимаций если их нет
-if (!document.getElementById('notification-styles')) {
-    const style = document.createElement('style');
-    style.id = 'notification-styles';
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        .loading-spinner {
-            border: 3px solid #f3f4f6;
-            border-top: 3px solid #4f46e5;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(style);
-}
-</script>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/builder.js') }}"></script>
 {% endblock %}

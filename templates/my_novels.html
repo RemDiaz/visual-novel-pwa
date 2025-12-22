@@ -21,17 +21,18 @@
     </a>
     <div class="stats">
         <span class="stat-item">
-            <i class="icon-book"></i> Всего: {{ novels|length }}
+            <i class="icon-book"></i> Всего: {{ novels_with_counts|length }}
         </span>
         <span class="stat-item">
-            <i class="icon-eye"></i> Опубликовано: {{ novels|selectattr('is_published')|list|length }}
+            <i class="icon-eye"></i> Опубликовано: {{ novels_with_counts|selectattr('novel.is_published')|list|length }}
         </span>
     </div>
 </div>
 
-{% if novels %}
+{% if novels_with_counts %}
     <div class="my-novels-grid">
-        {% for novel in novels %}
+        {% for item in novels_with_counts %}
+            {% set novel = item.novel %}
             <div class="my-novel-card {% if not novel.is_published %}draft{% endif %}">
                 <div class="my-novel-header">
                     <h3>{{ novel.title }}</h3>
@@ -50,7 +51,7 @@
                             <i class="icon-calendar"></i> Создано: {{ novel.created_at.strftime('%d.%m.%Y') }}
                         </span>
                         <span class="meta-item">
-                            <i class="icon-scene"></i> Сцен: {{ novel.scenes|length }}
+                            <i class="icon-scene"></i> Сцен: {{ item.scene_count }}
                         </span>
                         {% if novel.updated_at %}
                         <span class="meta-item">
@@ -94,3 +95,4 @@
     </div>
 {% endif %}
 {% endblock %}
+[file content end]

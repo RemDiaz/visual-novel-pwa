@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from database.db import db, User, Novel, Scene
@@ -7,7 +6,8 @@ import json
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
-from config import Config
+import uuid
+import traceback
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -23,26 +23,17 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Главная страница - показываем опубликованные новеллы
+# ========== ГЛАВНАЯ СТРАНИЦА ==========
 @app.route('/')
 def index():
     try:
         novels = Novel.query.filter_by(is_published=True).order_by(Novel.created_at.desc()).all()
-    except Exception as e:
-        print(f"Ошибка загрузки новелл: {e}")
+    except:
         novels = []
-        flash('Ошибка загрузки новелл', 'error')
     
     return render_template('index.html', novels=novels)
 
-# Мои новеллы
-@app.route('/my_novels')
-@login_required
-def my_novels():
-    novels = Novel.query.filter_by(author_id=current_user.id).order_by(Novel.created_at.desc()).all()
-    return render_template('my_novels.html', novels=novels)
-
-# Регистрация
+# ========== РЕГИСТРАЦИЯ ==========
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -67,7 +58,7 @@ def register():
     
     return render_template('register.html')
 
-# Вход
+# ========== ВХОД ==========
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -84,7 +75,7 @@ def login():
     
     return render_template('login.html')
 
-# Выход
+# ========== ВЫХОД ==========
 @app.route('/logout')
 @login_required
 def logout():
@@ -92,7 +83,7 @@ def logout():
     flash('Вы вышли из системы', 'info')
     return redirect(url_for('index'))
 
-# Профиль
+# ========== ПРОФИЛЬ ==========
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -108,7 +99,118 @@ def profile():
     
     return render_template('profile.html', user=current_user)
 
-# Конструктор
+# ========== СМЕНА ПАРОЛЯ ==========
+@app.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    try:
+        old_password = request.form.get('old_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if not old_password or not new_password or not confirm_password:
+            flash('Все поля обязательны для заполнения', 'error')
+            return redirect(url_for('profile'))
+        
+        if new_password != confirm_password:
+            flash('Новые пароли не совпадают', 'error')
+            return redirect(url_for('profile'))
+        
+        if len(new_password) < 6:
+            flash('Пароль должен быть не менее 6 символов', 'error')
+            return redirect(url_for('profile'))
+        
+        if current_user.password != old_password:
+            flash('Неверный текущий пароль', 'error')
+            return redirect(url_for('profile'))
+        
+        current_user.password = new_password
+        db.session.commit()
+        flash('Пароль успешно изменен', 'success')
+        return redirect(url_for('profile'))
+        
+    except Exception as e:
+        flash(f'Ошибка при смене пароля: {str(e)}', 'error')
+        return redirect(url_for('profile'))
+
+# ========== СМЕНА EMAIL ==========
+@app.route('/change_email', methods=['POST'])
+@login_required
+def change_email():
+    """Смена email"""
+    try:
+        new_email = request.form.get('new_email')
+        password = request.form.get('password')
+        
+        if not new_email or not password:
+            flash('Все поля обязательны для заполнения', 'error')
+            return redirect(url_for('profile'))
+        
+        # Проверяем пароль
+        if current_user.password != password:
+            flash('Неверный пароль', 'error')
+            return redirect(url_for('profile'))
+        
+        # Проверяем, что email не занят
+        existing_user = User.query.filter_by(email=new_email).first()
+        if existing_user and existing_user.id != current_user.id:
+            flash('Этот email уже используется', 'error')
+            return redirect(url_for('profile'))
+        
+        # Меняем email
+        current_user.email = new_email
+        db.session.commit()
+        
+        flash('Email успешно изменен', 'success')
+        return redirect(url_for('profile'))
+        
+    except Exception as e:
+        flash(f'Ошибка при смене email: {str(e)}', 'error')
+        return redirect(url_for('profile'))
+
+# ========== СМЕНА ТЕЛЕФОНА ==========
+@app.route('/change_phone', methods=['POST'])
+@login_required
+def change_phone():
+    """Смена телефона"""
+    try:
+        new_phone = request.form.get('new_phone')
+        
+        if not new_phone:
+            flash('Поле телефона обязательно', 'error')
+            return redirect(url_for('profile'))
+        
+        # Меняем телефон
+        current_user.phone = new_phone
+        db.session.commit()
+        
+        flash('Телефон успешно изменен', 'success')
+        return redirect(url_for('profile'))
+        
+    except Exception as e:
+        flash(f'Ошибка при смене телефона: {str(e)}', 'error')
+        return redirect(url_for('profile'))
+    
+# ========== МОИ НОВЕЛЛЫ ==========
+@app.route('/my_novels')
+@login_required
+def my_novels():
+    try:
+        novels = Novel.query.filter_by(author_id=current_user.id).order_by(Novel.created_at.desc()).all()
+        novels_with_counts = []
+        for novel in novels:
+            scene_count = Scene.query.filter_by(novel_id=novel.id).count()
+            novels_with_counts.append({
+                'novel': novel,
+                'scene_count': scene_count
+            })
+        return render_template('my_novels.html', novels_with_counts=novels_with_counts)
+    except Exception as e:
+        print(f"Ошибка в my_novels: {e}")
+        flash('Ошибка загрузки новелл', 'error')
+        return render_template('my_novels.html', novels_with_counts=[])
+
+# ========== КОНСТРУКТОР ==========
 @app.route('/builder')
 @app.route('/builder/<int:novel_id>')
 @login_required
@@ -122,7 +224,7 @@ def builder(novel_id=None):
     
     return render_template('builder.html', novel=novel)
 
-# Создание новой новеллы
+# ========== СОЗДАНИЕ НОВЕЛЛЫ ==========
 @app.route('/create_novel', methods=['POST'])
 @login_required
 def create_novel():
@@ -145,7 +247,43 @@ def create_novel():
         flash(f'Ошибка создания новеллы: {str(e)}', 'error')
         return redirect(url_for('builder'))
 
-# Сохранение новеллы (API)
+# ========== API: ЗАГРУЗКА ДАННЫХ НОВЕЛЛЫ ==========
+@app.route('/api/novel/<int:novel_id>')
+@login_required
+def get_novel_data(novel_id):
+    try:
+        novel = Novel.query.get_or_404(novel_id)
+        if not novel or novel.author_id != current_user.id:
+            return jsonify({'error': 'Нет доступа'}), 403
+        
+        scenes_data = []
+        for i, scene in enumerate(novel.scenes):
+            scenes_data.append({
+                'id': scene.id,
+                'name': scene.name or f'Сцена {i + 1}',
+                'background': scene.background or '',
+                'text': scene.text or '',
+                'order': scene.order or i,
+                'choices': scene.choices_list,
+                'sprites': scene.sprites_list
+            })
+        
+        response_data = {
+            'id': novel.id,
+            'title': novel.title or '',
+            'description': novel.description or '',
+            'cover_image': novel.cover_image or '',
+            'is_published': novel.is_published or False,
+            'scenes': scenes_data
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"❌ Ошибка в get_novel_data: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ========== API: СОХРАНЕНИЕ НОВЕЛЛЫ ==========
 @app.route('/api/save_novel/<int:novel_id>', methods=['POST'])
 @login_required
 def save_novel(novel_id):
@@ -174,13 +312,15 @@ def save_novel(novel_id):
         for i, scene_data in enumerate(scenes_data):
             scene = Scene(
                 novel_id=novel.id,
+                name=scene_data.get('name', f'Сцена {i+1}'),
                 background=scene_data.get('background', ''),
                 text=scene_data.get('text', ''),
                 order=scene_data.get('order', i)
             )
             
-            # Устанавливаем choices через сеттер (автоматическое преобразование)
-            scene.choices = scene_data.get('choices', [])
+            # Устанавливаем choices и sprites через свойства
+            scene.choices_list = scene_data.get('choices', [])
+            scene.sprites_list = scene_data.get('sprites', [])
             
             db.session.add(scene)
         
@@ -190,47 +330,17 @@ def save_novel(novel_id):
             'success': True,
             'message': 'Новелла сохранена успешно',
             'novel_id': novel.id,
-            'is_published': novel.is_published
+            'is_published': novel.is_published,
+            'scenes_count': len(scenes_data)
         })
         
     except Exception as e:
         print(f"❌ Ошибка сохранения новеллы: {str(e)}")
+        traceback.print_exc()
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)})
 
-# Получение данных новеллы (API)
-@app.route('/api/novel/<int:novel_id>')
-@login_required
-def get_novel_data(novel_id):
-    try:
-        novel = Novel.query.get_or_404(novel_id)
-        if not novel or novel.author_id != current_user.id:
-            return jsonify({'error': 'Нет доступа'})
-        
-        scenes = Scene.query.filter_by(novel_id=novel_id).order_by(Scene.order).all()
-        
-        scenes_data = []
-        for scene in scenes:
-            # Используем геттер choices (автоматическое преобразование из JSON)
-            scenes_data.append({
-                'id': scene.id,
-                'background': scene.background or '',
-                'text': scene.text or '',
-                'order': scene.order or 0,
-                'choices': scene.choices  # Автоматически преобразуется из JSON
-            })
-        
-        return jsonify({
-            'id': novel.id,
-            'title': novel.title or '',
-            'description': novel.description or '',
-            'cover_image': novel.cover_image or '',
-            'is_published': novel.is_published or False,
-            'scenes': scenes_data
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)})
-# Чтение новеллы
+# ========== ПРОСМОТР НОВЕЛЛЫ ==========
 @app.route('/view/<int:novel_id>')
 def view_novel(novel_id):
     try:
@@ -241,38 +351,21 @@ def view_novel(novel_id):
             flash('Эта новелла не опубликована', 'error')
             return redirect(url_for('index'))
         
-        scenes = Scene.query.filter_by(novel_id=novel_id).order_by(Scene.order).all()
-        
         # Подготавливаем сцены для шаблона
         scenes_for_template = []
-        for scene in scenes:
+        for scene in novel.scenes:
             scene_data = {
                 'id': scene.id,
+                'name': scene.name or f'Сцена {len(scenes_for_template) + 1}',
                 'text': scene.text or '',
                 'background': scene.background or '',
                 'order': scene.order,
-                'choices': []
+                'choices': scene.choices_list,
+                'sprites': scene.sprites_list
             }
-            
-            # Преобразуем choices из JSON
-            if scene._choices and scene._choices != '[]':
-                try:
-                    choices = json.loads(scene._choices)
-                    # Гарантируем правильную структуру
-                    if isinstance(choices, list):
-                        for choice in choices:
-                            if isinstance(choice, dict):
-                                # Обрабатываем разные варианты ключей
-                                text = choice.get('text', '')
-                                next_scene = choice.get('nextScene') or choice.get('next_scene') or 0
-                                scene_data['choices'].append({
-                                    'text': text,
-                                    'nextScene': int(next_scene) if next_scene else 0
-                                })
-                except Exception as e:
-                    print(f"Ошибка парсинга choices для сцены {scene.id}: {e}")
-            
             scenes_for_template.append(scene_data)
+        
+        print(f"📖 Загружена новелла '{novel.title}' с {len(scenes_for_template)} сценами")
         
         return render_template('viewer.html', 
                              novel=novel, 
@@ -280,19 +373,18 @@ def view_novel(novel_id):
         
     except Exception as e:
         print(f"Ошибка загрузки новеллы: {e}")
+        traceback.print_exc()
         flash('Ошибка загрузки новеллы', 'error')
         return redirect(url_for('index'))
 
-# Удаление новеллы
+# ========== УДАЛЕНИЕ НОВЕЛЛЫ ==========
 @app.route('/delete_novel/<int:novel_id>', methods=['POST'])
 @login_required
 def delete_novel(novel_id):
     try:
         novel = Novel.query.get(novel_id)
         if novel and novel.author_id == current_user.id:
-            # Удаляем все сцены новеллы
             Scene.query.filter_by(novel_id=novel.id).delete()
-            # Удаляем саму новеллу
             db.session.delete(novel)
             db.session.commit()
             flash('Новелла удалена', 'success')
@@ -303,27 +395,7 @@ def delete_novel(novel_id):
     
     return redirect(url_for('my_novels'))
 
-if __name__ == '__main__':
-    with app.app_context():
-        # Создаем таблицы если их нет
-        db.create_all()
-        print("✅ База данных готова")
-        
-        # Создаем тестового пользователя если нет пользователей
-        if User.query.count() == 0:
-            user = User(
-                email='test@example.com',
-                password='test123',
-                nickname='TestUser'
-            )
-            db.session.add(user)
-            db.session.commit()
-            print("✅ Создан тестовый пользователь")
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
-
-
-# Новый маршрут для быстрой публикации
+# ========== ПУБЛИКАЦИЯ НОВЕЛЛЫ ==========
 @app.route('/api/publish_novel/<int:novel_id>', methods=['POST'])
 @login_required
 def publish_novel(novel_id):
@@ -332,34 +404,6 @@ def publish_novel(novel_id):
         if novel.author_id != current_user.id:
             return jsonify({'success': False, 'error': 'Нет доступа'})
         
-        novel.is_published = True
-        novel.updated_at = datetime.utcnow()
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'message': 'Новелла опубликована!',
-            'novel_id': novel.id
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-    
-@app.route('/api/publish_novel/<int:novel_id>', methods=['POST'])
-@login_required
-def publish_novel(novel_id):
-    """Быстрая публикация новеллы"""
-    try:
-        novel = Novel.query.get_or_404(novel_id)
-        
-        # Проверяем права
-        if novel.author_id != current_user.id:
-            return jsonify({'success': False, 'error': 'Нет доступа'})
-        
-        # Проверяем, что есть хотя бы одна сцена
-        if not novel.scenes:
-            return jsonify({'success': False, 'error': 'Добавьте хотя бы одну сцену перед публикацией'})
-        
-        # Публикуем
         novel.is_published = True
         novel.updated_at = datetime.utcnow()
         db.session.commit()
@@ -374,16 +418,135 @@ def publish_novel(novel_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-# Функция проверки расширений файлов
-def allowed_file(filename, file_type='image'):
-    if '.' not in filename:
-        return False
+# ========== СОЗДАНИЕ ДЕМО НОВЕЛЛЫ ==========
+def create_demo_novel():
+    """Создание демо новеллы если её нет"""
+    try:
+        demo_novel = Novel.query.filter_by(title='Демо: Приключение в лесу').first()
+        if not demo_novel:
+            print("Создаю демо новеллу...")
+            
+            # Находим или создаем тестового пользователя
+            user = User.query.filter_by(email='test@example.com').first()
+            if not user:
+                user = User(
+                    email='test@example.com',
+                    password='test123',
+                    nickname='TestUser'
+                )
+                db.session.add(user)
+                db.session.commit()
+            
+            # Создаем демо новеллу
+            demo_novel = Novel(
+                title='Демо: Приключение в лесу',
+                description='Интерактивная история с выбором пути',
+                cover_image='https://picsum.photos/400/300?random=1',
+                is_published=True,
+                author_id=user.id
+            )
+            db.session.add(demo_novel)
+            db.session.commit()
+            
+            # Создаем демо сцены
+            demo_scenes = [
+                {
+                    'name': 'Начало приключения',
+                    'background': 'https://picsum.photos/800/400?random=2',
+                    'text': 'Вы стоите на опушке леса. Перед вами две тропинки. Куда пойдете?',
+                    'order': 1,
+                    'choices': [
+                        {'text': 'Пойти налево', 'nextScene': 2},
+                        {'text': 'Пойти направо', 'nextScene': 3}
+                    ],
+                    'sprites': [
+                        {
+                            'id': 'sprite_1',
+                            'url': 'https://picsum.photos/150/200?random=10',
+                            'name': 'Путешественник',
+                            'x': 300, 'y': 150,
+                            'width': 120, 'height': 180,
+                            'rotation': 0, 'zIndex': 1,
+                            'isOnCanvas': True
+                        }
+                    ]
+                },
+                {
+                    'name': 'Сокровище',
+                    'background': 'https://picsum.photos/800/400?random=3',
+                    'text': 'Вы пошли налево и нашли сундук с сокровищами! Поздравляем!',
+                    'order': 2,
+                    'choices': [],
+                    'sprites': [
+                        {
+                            'id': 'sprite_2',
+                            'url': 'https://picsum.photos/150/200?random=11',
+                            'name': 'Сокровище',
+                            'x': 400, 'y': 100,
+                            'width': 150, 'height': 150,
+                            'rotation': 0, 'zIndex': 1,
+                            'isOnCanvas': True
+                        }
+                    ]
+                },
+                {
+                    'name': 'Встреча с драконом',
+                    'background': 'https://picsum.photos/800/400?random=4',
+                    'text': 'Вы пошли направо и встретили дружелюбного дракона.',
+                    'order': 3,
+                    'choices': [
+                        {'text': 'Рассказать историю', 'nextScene': 4},
+                        {'text': 'Поблагодарить и уйти', 'nextScene': 5}
+                    ],
+                    'sprites': [
+                        {
+                            'id': 'sprite_3',
+                            'url': 'https://picsum.photos/150/200?random=12',
+                            'name': 'Дракон',
+                            'x': 350, 'y': 120,
+                            'width': 180, 'height': 200,
+                            'rotation': 0, 'zIndex': 1,
+                            'isOnCanvas': True
+                        }
+                    ]
+                }
+            ]
+            
+            for scene_data in demo_scenes:
+                scene = Scene(
+                    novel_id=demo_novel.id,
+                    name=scene_data['name'],
+                    background=scene_data['background'],
+                    text=scene_data['text'],
+                    order=scene_data['order']
+                )
+                scene.choices_list = scene_data['choices']
+                scene.sprites_list = scene_data['sprites']
+                db.session.add(scene)
+            
+            db.session.commit()
+            print("✅ Демо новелла создана!")
+            
+    except Exception as e:
+        print(f"❌ Ошибка создания демо новеллы: {e}")
+
+# ========== ЗАПУСК СЕРВЕРА ==========
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        create_demo_novel()
     
-    ext = filename.rsplit('.', 1)[1].lower()
+    print("=" * 50)
+    print("🚀 Сервер визуальных новелл запускается...")
+    print("=" * 50)
+    print("🌐 Откройте в браузере:")
+    print("   1. http://localhost:5000 - Главная страница")
+    print("   2. http://localhost:5000/login - Вход")
+    print("   3. http://localhost:5000/register - Регистрация")
+    print("=" * 50)
+    print("🔑 Тестовый пользователь:")
+    print("   Email: test@example.com")
+    print("   Пароль: test123")
+    print("=" * 50)
     
-    if file_type == 'image':
-        return ext in Config.ALLOWED_IMAGE_EXTENSIONS
-    elif file_type == 'audio':
-        return ext in Config.ALLOWED_AUDIO_EXTENSIONS
-    
-    return False
+    app.run(debug=True, host='0.0.0.0', port=5000)
