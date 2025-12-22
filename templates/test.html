@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+// Тестовые данные
+let scenes = [
+    {
+        background: "https://picsum.photos/800/400?random=1",
+        text: "Это первая сцена. Что вы выберете?",
+        choices: [
+            {"text": "Идти налево", "nextScene": 2},
+            {"text": "Идти направо", "nextScene": 3}
+        ]
+    },
+    {
+        background: "https://picsum.photos/800/400?random=2",
+        text: "Вы пошли налево и нашли сокровище!",
+        choices: []
+    },
+    {
+        background: "https://picsum.photos/800/400?random=3",
+        text: "Вы пошли направо и встретили дракона...",
+        choices: []
+    }
+];
+
+console.log("Тестовые данные загружены:", scenes);
+</script>
+</body>
+</html>

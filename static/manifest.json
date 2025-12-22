@@ -1,21 +1,71 @@
 {
-  "name": "Платформа визуальных новелл",
-  "short_name": "NovelPWA",
-  "description": "Создание и чтение визуальных новелл",
+  "name": "Визуальные новеллы PWA",
+  "short_name": "VN PWA",
+  "description": "Платформа для создания и чтения визуальных новелл",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#333333",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
+    {
+      "src": "/static/images/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
     {
       "src": "/static/images/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
+      "src": "/static/images/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
       "src": "/static/images/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "splash_pages": null,
+  "categories": ["entertainment", "books", "education"],
+  "shortcuts": [
+    {
+      "name": "Создать новеллу",
+      "short_name": "Создать",
+      "description": "Создать новую визуальную новеллу",
+      "url": "/builder",
+      "icons": [{ "src": "/static/images/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Мои новеллы",
+      "short_name": "Мои",
+      "description": "Посмотреть мои новеллы",
+      "url": "/my_novels",
+      "icons": [{ "src": "/static/images/icon-96.png", "sizes": "96x96" }]
     }
   ]
 }

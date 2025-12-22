@@ -1,0 +1,439 @@
+/* static/css/viewer.css */
+/* Стили для чтения новелл */
+
+.novel-viewer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.novel-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.novel-title {
+    font-size: 2.5rem;
+    color: #111827;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.novel-author {
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+.novel-description {
+    color: #4b5563;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-top: 15px;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.scene-container {
+    min-height: 400px;
+    position: relative;
+}
+
+.scene-content {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.scene-background {
+    margin-bottom: 20px;
+}
+
+.scene-background img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.scene-text {
+    font-size: 1.3rem;
+    line-height: 1.8;
+    color: #374151;
+    margin-bottom: 30px;
+    white-space: pre-line;
+}
+
+.choices-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.choice-btn {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 18px 25px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.choice-btn:hover {
+    background: #4338ca;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+}
+
+.choice-btn:before {
+    content: "→";
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.nav-btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 120px;
+}
+
+.nav-btn-prev {
+    background: #6b7280;
+    color: white;
+}
+
+.nav-btn-prev:hover {
+    background: #4b5563;
+}
+
+.nav-btn-next {
+    background: #10b981;
+    color: white;
+}
+
+.nav-btn-next:hover {
+    background: #059669;
+}
+
+.novel-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    margin-top: 10px;
+    padding: 0 10px;
+}
+
+.progress-bar {
+    height: 5px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.scene-counter {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+/* Конец истории */
+.end-message {
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-radius: 10px;
+    margin: 30px 0;
+}
+
+.end-message h3 {
+    color: #0369a1;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.end-message p {
+    color: #0c4a6e;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .builder-main {
+        grid-template-columns: 1fr;
+    }
+    
+    .novel-title {
+        font-size: 2rem;
+    }
+    
+    .scene-content {
+        padding: 20px;
+    }
+    
+    .choice-btn {
+        padding: 15px;
+        font-size: 1.1rem;
+    }
+    
+    .nav-btn {
+        padding: 10px 15px;
+        min-width: 100px;
+    }
+}
+
+/* Темная тема (опционально) */
+@media (prefers-color-scheme: dark) {
+    .scene-content {
+        background: #1f2937;
+        color: #f9fafb;
+    }
+    
+    .scene-text {
+        color: #f3f4f6;
+    }
+    
+    .novel-description {
+        background: #374151;
+        color: #d1d5db;
+    }
+}
+
+/* Добавьте в конец viewer.css */
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+}
+
+.loading-spinner {
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid #4f46e5;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    text-align: center;
+    padding: 40px;
+    background: #fee2e2;
+    border-radius: 10px;
+    color: #991b1b;
+    margin: 20px 0;
+}
+
+.error-message h3 {
+    color: #dc2626;
+    margin-bottom: 15px;
+}
+
+/* Кнопки */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #4f46e5;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #4338ca;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+/* Дополнительные стили для просмотра */
+.scene-container {
+    min-height: 500px;
+}
+
+.scene-text {
+    font-size: 18px;
+    line-height: 1.8;
+    margin-bottom: 30px;
+    white-space: pre-line;
+}
+
+.choice-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+    margin: 8px 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.choice-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.choice-btn:before {
+    content: "▶";
+    font-size: 14px;
+}
+
+.choice-end {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.choice-end:before {
+    content: "🏁";
+}
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.end-message {
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    border-radius: 15px;
+    margin: 30px 0;
+}
+
+.end-message h3 {
+    color: #2d3748;
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.end-message p {
+    color: #4a5568;
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+.error-message {
+    text-align: center;
+    padding: 40px;
+    background: #fed7d7;
+    border-radius: 10px;
+    color: #9b2c2c;
+}
+
+/* Прогресс */
+.progress-container {
+    background: #e2e8f0;
+    height: 6px;
+    border-radius: 3px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+.scene-info {
+    display: flex;
+    justify-content: space-between;
+    color: #718096;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.author-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}

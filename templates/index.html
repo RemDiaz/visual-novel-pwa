@@ -1,15 +1,142 @@
 {% extends "base.html" %}
 
-{% block title %}Главная{% endblock %}
+{% block title %}Главная - Визуальные новеллы{% endblock %}
 
 {% block content %}
-<h1>Доступные новеллы</h1>
-<div class="novel-list">
-    {% for novel in novels %}
-        <div class="novel-card">
-            <h3>{{ novel.title }}</h3>
-            <a href="/view/{{ novel.id }}">Читать</a>
+<h1>Визуальные новеллы</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
         </div>
-    {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="hero-section">
+    <h2>Создавайте и читайте интерактивные истории</h2>
+    <p>Платформа для создания визуальных новелл с ветвлением сюжета</p>
+    {% if current_user.is_authenticated %}
+        <div class="hero-actions">
+            <a href="/builder" class="btn btn-primary btn-large">
+                <i class="icon-plus"></i> Создать новеллу
+            </a>
+            <a href="/my_novels" class="btn btn-secondary btn-large">
+                <i class="icon-book"></i> Мои новеллы
+            </a>
+        </div>
+    {% else %}
+        <div class="hero-actions">
+            <a href="/register" class="btn btn-primary btn-large">Начать создание</a>
+            <a href="/login" class="btn btn-secondary btn-large">Войти в аккаунт</a>
+        </div>
+    {% endif %}
 </div>
+
+{% if novels %}
+    <section class="featured-novels">
+        <h2>Популярные новеллы</h2>
+        <div class="novel-grid">
+            {% for novel in novels %}
+                <div class="novel-card">
+                    {% if novel.cover_image %}
+                        <div class="novel-cover">
+                            <img src="{{ novel.cover_image }}" alt="{{ novel.title }}" 
+                                 onerror="this.src='https://picsum.photos/400/300?random={{ novel.id }}'">
+                        </div>
+                    {% else %}
+                        <div class="novel-cover-placeholder">
+                            <span class="placeholder-text">{{ novel.title|truncate(20) }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="novel-info">
+                        <h3 class="novel-title">{{ novel.title }}</h3>
+                        <p class="novel-description">{{ novel.description|truncate(100) }}</p>
+                        <div class="novel-meta">
+                            <span class="novel-author">
+                                <i class="icon-user"></i> {{ novel.author.nickname }}
+                            </span>
+                            <span class="novel-date">
+                                <i class="icon-calendar"></i> {{ novel.created_at.strftime('%d.%m.%Y') }}
+                            </span>
+                        </div>
+                        <div class="novel-actions">
+                            <a href="/view/{{ novel.id }}" class="btn btn-read">
+                                <i class="icon-play"></i> Читать
+                            </a>
+                            {% if current_user.is_authenticated and current_user.id == novel.author_id %}
+                                <a href="/builder/{{ novel.id }}" class="btn btn-edit">
+                                    <i class="icon-edit"></i> Редактировать
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="icon-book-open"></i>
+        </div>
+        <h3>Пока нет опубликованных новелл</h3>
+        <p>Будьте первым, кто создаст свою историю!</p>
+        {% if current_user.is_authenticated %}
+            <a href="/builder" class="btn btn-primary">Создать первую новеллу</a>
+        {% else %}
+            <a href="/register" class="btn btn-primary">Зарегистрироваться и создать</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// PWA функционал
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+            .then(registration => {
+                console.log('ServiceWorker зарегистрирован: ', registration.scope);
+            })
+            .catch(err => {
+                console.log('Ошибка регистрации ServiceWorker: ', err);
+            });
+    });
+}
+
+// Установка PWA
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Показываем кнопку установки
+    const installButton = document.createElement('button');
+    installButton.className = 'btn btn-install';
+    installButton.innerHTML = '<i class="icon-download"></i> Установить приложение';
+    installButton.onclick = installPWA;
+    
+    const header = document.querySelector('header nav');
+    if (header) {
+        header.appendChild(installButton);
+    }
+});
+
+function installPWA() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(choiceResult => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('Пользователь установил PWA');
+            }
+            deferredPrompt = null;
+        });
+    }
+}
+</script>
 {% endblock %}

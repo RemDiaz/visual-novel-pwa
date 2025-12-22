@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Мои новеллы{% endblock %}
+
+{% block content %}
+<h1>Мои новеллы</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<div class="my-novels-header">
+    <a href="/builder" class="btn btn-primary">
+        <i class="icon-plus"></i> Создать новую новеллу
+    </a>
+    <div class="stats">
+        <span class="stat-item">
+            <i class="icon-book"></i> Всего: {{ novels|length }}
+        </span>
+        <span class="stat-item">
+            <i class="icon-eye"></i> Опубликовано: {{ novels|selectattr('is_published')|list|length }}
+        </span>
+    </div>
+</div>
+
+{% if novels %}
+    <div class="my-novels-grid">
+        {% for novel in novels %}
+            <div class="my-novel-card {% if not novel.is_published %}draft{% endif %}">
+                <div class="my-novel-header">
+                    <h3>{{ novel.title }}</h3>
+                    <span class="novel-status {% if novel.is_published %}published{% else %}draft{% endif %}">
+                        {% if novel.is_published %}Опубликовано{% else %}Черновик{% endif %}
+                    </span>
+                </div>
+                
+                <div class="my-novel-body">
+                    <p class="novel-description">
+                        {{ novel.description|truncate(150) or 'Нет описания' }}
+                    </p>
+                    
+                    <div class="novel-meta">
+                        <span class="meta-item">
+                            <i class="icon-calendar"></i> Создано: {{ novel.created_at.strftime('%d.%m.%Y') }}
+                        </span>
+                        <span class="meta-item">
+                            <i class="icon-scene"></i> Сцен: {{ novel.scenes|length }}
+                        </span>
+                        {% if novel.updated_at %}
+                        <span class="meta-item">
+                            <i class="icon-update"></i> Обновлено: {{ novel.updated_at.strftime('%d.%m.%Y') }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="my-novel-actions">
+                    <a href="/view/{{ novel.id }}" class="btn btn-sm btn-read" target="_blank">
+                        <i class="icon-eye"></i> Просмотр
+                    </a>
+                    <a href="/builder/{{ novel.id }}" class="btn btn-sm btn-edit">
+                        <i class="icon-edit"></i> Редактировать
+                    </a>
+                    {% if novel.is_published %}
+                        <a href="/view/{{ novel.id }}" class="btn btn-sm btn-share">
+                            <i class="icon-share"></i> Поделиться
+                        </a>
+                    {% endif %}
+                    <form action="/delete_novel/{{ novel.id }}" method="POST" 
+                          onsubmit="return confirm('Удалить новеллу «{{ novel.title }}»?')"
+                          class="delete-form">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="icon-trash"></i> Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="icon-book"></i>
+        </div>
+        <h3>У вас пока нет новелл</h3>
+        <p>Создайте свою первую визуальную новеллу!</p>
+        <a href="/builder" class="btn btn-primary">Создать новеллу</a>
+    </div>
+{% endif %}
+{% endblock %}

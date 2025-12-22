@@ -2,54 +2,376 @@
 
 {% block title %}{{ novel.title }}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/viewer.css') }}">
+
+{% endblock %}
+
 {% block content %}
 <div class="novel-viewer">
-    <h1>{{ novel.title }}</h1>
-    <div class="scene-container">
-        {% for scene in scenes %}
-            <div class="scene">
-                {% if scene.background %}
-                    <div class="scene-background">
-                        <img src="{{ scene.background }}" alt="Фон сцены">
-                    </div>
-                {% endif %}
-                <div class="scene-text">
-                    {{ scene.text }}
-                </div>
+    <!-- Заголовок новеллы -->
+    <div class="novel-header">
+        <h1 class="novel-title">{{ novel.title }}</h1>
+        <div class="author-info">
+            <div class="author-avatar">
+                {{ novel.author.nickname[:1].upper() if novel.author.nickname else 'A' }}
             </div>
-        {% endfor %}
+            <div>
+                <div class="novel-author">Автор: {{ novel.author.nickname }}</div>
+                <div class="novel-date">{{ novel.created_at.strftime('%d.%m.%Y') }}</div>
+            </div>
+        </div>
+        
+        {% if novel.description %}
+            <div class="novel-description">
+                {{ novel.description }}
+            </div>
+        {% endif %}
     </div>
+
+    <!-- Информация о прогрессе -->
+    <div class="scene-info">
+        <span>Сцена <span id="current-scene">1</span> из <span id="total-scenes">{{ scenes|length }}</span></span>
+        <span id="progress-percent">0%</span>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <!-- Контейнер для сцены -->
+    <div class="scene-container">
+        <div id="scene-display" class="scene-content">
+            <!-- Сцена будет загружаться здесь -->
+        </div>
+        
+        <!-- Контейнер для вариантов выбора -->
+        <div id="choices-display" class="choices-container">
+            <!-- Варианты выбора появятся здесь -->
+        </div>
+    </div>
+    
+    <!-- Навигация -->
     <div class="navigation">
-        <button onclick="prevScene()">← Назад</button>
-        <button onclick="nextScene()">Вперёд →</button>
+        <button onclick="prevScene()" id="prev-btn" class="nav-btn nav-btn-prev">
+            ← Назад
+        </button>
+        <button onclick="nextScene()" id="next-btn" class="nav-btn nav-btn-next">
+            Далее →
+        </button>
     </div>
 </div>
+
+<!-- Передаем данные новеллы в безопасном формате -->
+<script type="application/json" id="novel-data">
+{
+    "id": {{ novel.id }},
+    "title": {{ novel.title|tojson }},
+    "scenes": [
+        {% for scene in scenes %}
+        {
+            "id": {{ scene.id }},
+            "text": {{ scene.text|tojson }},
+            "background": {% if scene.background %}{{ scene.background|tojson }}{% else %}null{% endif %},
+            "choices": [
+                {% if scene.choices %}
+                    {% for choice in scene.choices %}
+                    {
+                        "text": {{ choice.text|tojson }},
+                        "nextScene": {{ choice.nextScene if choice.nextScene is defined else choice.next_scene if choice.next_scene is defined else 0 }}
+                    }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                {% endif %}
+            ]
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+
 <script>
-let currentScene = 0;
-const scenes = document.querySelectorAll('.scene');
+// Глобальные переменные
+let currentSceneIndex = 0;
+let scenesData = [];
 
-function showScene(index) {
-    scenes.forEach(scene => scene.style.display = 'none');
-    if (scenes[index]) {
-        scenes[index].style.display = 'block';
+// Загрузка данных из JSON
+function loadNovelData() {
+    try {
+        const dataElement = document.getElementById('novel-data');
+        if (!dataElement) {
+            console.error('Element with novel data not found');
+            return { scenes: [] };
+        }
+        
+        const jsonText = dataElement.textContent.trim();
+        if (!jsonText) {
+            console.error('No JSON data found');
+            return { scenes: [] };
+        }
+        
+        return JSON.parse(jsonText);
+    } catch (error) {
+        console.error('Error parsing novel data:', error);
+        return { scenes: [] };
     }
 }
 
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const novelData = loadNovelData();
+    scenesData = novelData.scenes || [];
+    
+    console.log('Загружены сцены:', scenesData.length);
+    
+    if (scenesData.length > 0) {
+        // Отображаем первую сцену
+        displayScene(0);
+        
+        // Обновляем общее количество сцен
+        document.getElementById('total-scenes').textContent = scenesData.length;
+    } else {
+        // Нет сцен
+        showNoScenesMessage();
+    }
+});
+
+// Отображение сцены
+function displayScene(index) {
+    if (index < 0 || index >= scenesData.length) {
+        showEndMessage();
+        return;
+    }
+    
+    currentSceneIndex = index;
+    const scene = scenesData[index];
+    
+    // Обновляем заголовок
+    document.getElementById('current-scene').textContent = index + 1;
+    
+    // Создаем HTML для сцены
+    let sceneHTML = '';
+    
+    // Фон сцены
+    if (scene.background) {
+        sceneHTML += `
+            <div class="scene-background">
+                <img src="${escapeHtml(scene.background)}" alt="Фон сцены" 
+                     onerror="this.style.display='none'">
+            </div>
+        `;
+    }
+    
+    // Текст сцены
+    const sceneText = scene.text ? scene.text.replace(/\n/g, '<br>') : '...';
+    sceneHTML += `
+        <div class="scene-text">
+            ${sceneText}
+        </div>
+    `;
+    
+    // Отображаем сцену
+    document.getElementById('scene-display').innerHTML = sceneHTML;
+    
+    // Отображаем варианты выбора
+    displayChoices(scene.choices);
+    
+    // Обновляем прогресс
+    updateProgress(index);
+    
+    // Обновляем навигацию
+    updateNavigation(index, scene.choices);
+    
+    // Прокручиваем наверх
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Отображение вариантов выбора
+function displayChoices(choices) {
+    const choicesContainer = document.getElementById('choices-display');
+    
+    if (!choices || choices.length === 0) {
+        // Нет вариантов выбора
+        choicesContainer.innerHTML = '';
+        return;
+    }
+    
+    let choicesHTML = '<h3>Ваш выбор:</h3>';
+    
+    choices.forEach((choice, index) => {
+        const choiceText = choice.text || `Вариант ${index + 1}`;
+        const nextScene = choice.nextScene || 0;
+        
+        if (nextScene === 0) {
+            // Конец истории
+            choicesHTML += `
+                <button class="choice-btn choice-end" onclick="showEndMessage('🎉 ${escapeHtml(choiceText)}')">
+                    ${escapeHtml(choiceText)}
+                </button>
+            `;
+        } else if (nextScene > 0 && nextScene <= scenesData.length) {
+            // Переход к другой сцене
+            choicesHTML += `
+                <button class="choice-btn" onclick="goToScene(${nextScene - 1})">
+                    ${escapeHtml(choiceText)}
+                </button>
+            `;
+        } else {
+            // Некорректный номер сцены
+            choicesHTML += `
+                <button class="choice-btn" onclick="nextScene()">
+                    ${escapeHtml(choiceText)}
+                </button>
+            `;
+        }
+    });
+    
+    choicesContainer.innerHTML = choicesHTML;
+}
+
+// Обновление прогресса
+function updateProgress(index) {
+    const progress = ((index + 1) / scenesData.length) * 100;
+    document.getElementById('progress-bar').style.width = `${progress}%`;
+    document.getElementById('progress-percent').textContent = `${Math.round(progress)}%`;
+}
+
+// Обновление навигации
+function updateNavigation(index, choices) {
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    
+    // Кнопка "Назад"
+    prevBtn.style.display = index > 0 ? 'block' : 'none';
+    
+    // Кнопка "Далее" показываем только если нет вариантов выбора
+    const hasChoices = choices && choices.length > 0;
+    const hasNextScene = index < scenesData.length - 1;
+    
+    nextBtn.style.display = (!hasChoices && hasNextScene) ? 'block' : 'none';
+}
+
+// Переход к сцене
+function goToScene(index) {
+    if (index >= 0 && index < scenesData.length) {
+        displayScene(index);
+    } else {
+        showEndMessage();
+    }
+}
+
+// Следующая сцена
 function nextScene() {
-    if (currentScene < scenes.length - 1) {
-        currentScene++;
-        showScene(currentScene);
+    if (currentSceneIndex < scenesData.length - 1) {
+        displayScene(currentSceneIndex + 1);
+    } else {
+        showEndMessage();
     }
 }
 
+// Предыдущая сцена
 function prevScene() {
-    if (currentScene > 0) {
-        currentScene--;
-        showScene(currentScene);
+    if (currentSceneIndex > 0) {
+        displayScene(currentSceneIndex - 1);
     }
 }
 
-// Показываем первую сцену при загрузке
-showScene(0);
+// Сообщение о конце истории
+function showEndMessage(customMessage = null) {
+    const message = customMessage || '🎉 Поздравляем! Вы дочитали новеллу до конца.';
+    
+    document.getElementById('scene-display').innerHTML = `
+        <div class="end-message">
+            <h3>Конец истории</h3>
+            <p>${message}</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="displayScene(0)" class="btn btn-primary">
+                    📖 Начать заново
+                </button>
+                <button onclick="window.location.href='/'" class="btn btn-secondary">
+                    🏠 На главную
+                </button>
+                {% if current_user.is_authenticated %}
+                <button onclick="window.location.href='/builder'" class="btn btn-success">
+                    ✍️ Создать свою
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('choices-display').innerHTML = '';
+    document.getElementById('prev-btn').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('progress-percent').textContent = '100%';
+}
+
+// Сообщение "нет сцен"
+function showNoScenesMessage() {
+    document.getElementById('scene-display').innerHTML = `
+        <div class="error-message">
+            <h3>В этой новелле пока нет сцен</h3>
+            <p>Автор ещё не добавил содержание.</p>
+            <button onclick="window.location.href='/'" class="btn btn-primary">
+                ← Вернуться на главную
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('choices-display').innerHTML = '';
+    document.getElementById('prev-btn').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+}
+
+// Экранирование HTML
+function escapeHtml(text) {
+    if (typeof text !== 'string') return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Управление клавишами
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        nextScene();
+    }
+    if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevScene();
+    }
+});
+
+// Кнопки для мобильных устройств
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', function(e) {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+});
+
+function handleSwipe() {
+    const swipeThreshold = 50;
+    const diff = touchStartX - touchEndX;
+    
+    if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+            // Свайп влево - вперед
+            nextScene();
+        } else {
+            // Свайп вправо - назад
+            prevScene();
+        }
+    }
+}
+
+// Проверка структуры данных в консоли для отладки
+console.log('Данные новеллы:', loadNovelData());
 </script>
 {% endblock %}
