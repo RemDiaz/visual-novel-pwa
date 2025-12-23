@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1 class="main-h1">Визуальные новеллы</h1>
-<div class="main-whitebackground">
+
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <div class="flash-messages">
@@ -34,8 +34,8 @@
         </div>
     {% endif %}
 </div>
-
 {% if novels %}
+<div class="main-whitebackground">
     <section class="featured-novels">
         <h2>Популярные новеллы</h2>
         <div class="novel-grid">
