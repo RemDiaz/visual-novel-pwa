@@ -3,7 +3,7 @@
 {% block title %}Мои новеллы{% endblock %}
 
 {% block content %}
-<h1>Мои новеллы</h1>
+<h1 class="dop_margin_bot different_color_white">Мои новеллы</h1>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -19,7 +19,7 @@
     <a href="/builder" class="btn btn-primary">
         <i class="icon-plus"></i> Создать новую новеллу
     </a>
-    <div class="stats">
+    <div class="stats different_color dop_margin">
         <span class="stat-item">
             <i class="icon-book"></i> Всего: {{ novels_with_counts|length }}
         </span>

@@ -3,9 +3,16 @@
 {% block title %}Главная - Визуальные новеллы{% endblock %}
 
 {% block content %}
-<h1>Визуальные новеллы</h1>
+<style>
+    @media(max-width: 768px) {
+       .main-h1 {
+            font-size: 1.5rem
+       } 
+    }
+</style>
+<h1 class="main-h1">Визуальные новеллы</h1>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
+<!--{% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <div class="flash-messages">
             {% for category, message in messages %}
@@ -13,11 +20,11 @@
             {% endfor %}
         </div>
     {% endif %}
-{% endwith %}
+{% endwith %}-->
 
 <div class="hero-section">
-    <h2>Создавайте и читайте интерактивные истории</h2>
-    <p>Платформа для создания визуальных новелл с ветвлением сюжета</p>
+    <h2 class="different_color">Создавайте и читайте интерактивные истории</h2>
+    <p class="different_color dop_margin_bot">Платформа для создания визуальных новелл с ветвлением сюжета</p>
     {% if current_user.is_authenticated %}
         <div class="hero-actions">
             <a href="/builder" class="btn btn-primary btn-large">
@@ -34,8 +41,8 @@
         </div>
     {% endif %}
 </div>
-
 {% if novels %}
+<div class="main-whitebackground">
     <section class="featured-novels">
         <h2>Популярные новеллы</h2>
         <div class="novel-grid">
@@ -95,6 +102,7 @@
 {% endblock %}
 
 {% block extra_js %}
+</div>
 <script>
 // PWA функционал
 if ('serviceWorker' in navigator) {

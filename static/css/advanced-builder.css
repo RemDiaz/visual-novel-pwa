@@ -662,6 +662,48 @@
     }
 }
 
+@media (max-width: 768px) {
+    .form-control {
+        font-size: 0.6rem;
+    }
+    .btn {
+        font-size: 0.6rem;
+        padding: 6px;
+        
+    }
+    .header-left h2 {
+        font-size: 1rem;
+    }
+    .scenes-panel {
+        min-height: 300px;
+    }
+    .visual-editor {
+        overflow: auto;
+    }
+    .builder-main-advanced {
+        overflow: auto;
+        min-height: 1000px;
+    }
+    .sprites-header h5{
+        font-size: 0.7rem;
+    }
+    .sprites-header small{
+        font-size: 0.7rem;
+    }
+    .upload-text {
+        font-size: 0.7rem;
+    }
+    .upload-hint {
+        font-size: 0.5rem;
+    }
+    .upload-icon {
+        font-size: 1.5rem;
+    }
+    .text-muted {
+        font-size: 0.6rem;
+    }
+}
+
 /* Улучшенные скроллбары */
 .scenes-panel::-webkit-scrollbar,
 .properties-panel::-webkit-scrollbar,
