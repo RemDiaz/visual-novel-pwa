@@ -3,8 +3,8 @@
 {% block title %}Главная - Визуальные новеллы{% endblock %}
 
 {% block content %}
-<h1>Визуальные новеллы</h1>
-
+<h1 class="main-h1">Визуальные новеллы</h1>
+<div class="main-whitebackground">
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <div class="flash-messages">
@@ -95,6 +95,7 @@
 {% endblock %}
 
 {% block extra_js %}
+</div>
 <script>
 // PWA функционал
 if ('serviceWorker' in navigator) {
