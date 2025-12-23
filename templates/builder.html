@@ -22,7 +22,7 @@
                     <textarea name="description" class="form-control" rows="3" placeholder="Краткое описание сюжета"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    🎮 Создать и перейти к редактору
+                     Создать и перейти к редактору
                 </button>
             </form>
         </div>
@@ -34,13 +34,13 @@
                 <h2 id="novel-title-display">{{ novel.title }}</h2>
                 <div class="builder-controls">
                     <button onclick="saveNovel()" class="btn btn-primary" id="save-btn">
-                        💾 Сохранить
+                         Сохранить
                     </button>
                     <button onclick="previewNovel()" class="btn btn-secondary">
-                        👁️ Предпросмотр
+                         Предпросмотр
                     </button>
                     <button onclick="addNewScene()" class="btn btn-success">
-                        ➕ Новая сцена
+                         Новая сцена
                     </button>
                 </div>
             </div>
@@ -54,7 +54,7 @@
                         <!-- Сцены будут добавляться здесь -->
                     </div>
                     <button onclick="addNewScene()" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">
-                        ➕ Добавить сцену
+                         Добавить сцену
                     </button>
                 </div>
 
@@ -78,7 +78,7 @@
                         </div>
                         
                         <button onclick="saveCurrentScene()" class="btn btn-primary">
-                            💾 Сохранить сцену
+                             Сохранить сцену
                         </button>
                     </div>
 
@@ -92,7 +92,7 @@
                         </div>
                         
                         <button onclick="addNewChoice()" class="btn btn-success" style="margin-top: 15px;">
-                            ➕ Добавить вариант выбора
+                             Добавить вариант выбора
                         </button>
                     </div>
 
@@ -140,7 +140,7 @@
                     
                     <div class="form-group">
                         <button onclick="publishNovel()" class="btn btn-success" id="publish-btn">
-                            {% if novel.is_published %}✅ Опубликовано{% else %}📢 Опубликовать{% endif %}
+                            {% if novel.is_published %}✅ Опубликовано{% else %} Опубликовать{% endif %}
                         </button>
                         <small class="text-muted" style="display: block; margin-top: 5px;">
                             Опубликованные новеллы видны всем пользователям на главной странице
@@ -579,7 +579,7 @@ async function saveNovel() {
             
             // Обновляем кнопку публикации
             const publishBtn = document.getElementById('publish-btn');
-            publishBtn.innerHTML = novelData.is_published ? '✅ Опубликовано' : '📢 Опубликовать';
+            publishBtn.innerHTML = novelData.is_published ? '✅ Опубликовано' : ' Опубликовать';
             publishBtn.disabled = novelData.is_published;
             
         } else {

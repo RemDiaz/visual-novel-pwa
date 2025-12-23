@@ -1,6 +1,28 @@
 /* static/css/builder.css */
 /* Стили для конструктора новелл */
 
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track,::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb,
+.properties-panel::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover,::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+
+
 .builder-container {
     display: flex;
     flex-direction: column;
@@ -28,9 +50,13 @@
 .builder-main {
     display: grid;
     grid-template-columns: 300px 1fr;
+    grid-template-rows: 600px;
     gap: 20px;
     flex: 1;
     overflow: hidden;
+
+    min-height: min-content;  
+    
 }
 
 .scenes-sidebar {
@@ -38,12 +64,17 @@
     border-radius: 8px;
     padding: 15px;
     overflow-y: auto;
+
+        
 }
 
 .scene-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
+
+    
+    
 }
 
 .scene-item {

@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2>Личный кабинет</h2>
-<form method="POST" action="/profile">
+<form class="form1" method="POST" action="/profile">
     <div>
         <label>Никнейм:</label>
         <input type="text" name="nickname" value="{{ user.nickname }}" required>
@@ -24,10 +24,10 @@
             <option value="EN" {% if user.language == 'EN' %}selected{% endif %}>English</option>
         </select>
     </div>
-    <button type="submit">Сохранить изменения</button>
+    <button class="btn1" type="submit">Сохранить изменения</button>
 </form>
 <h3>Мои новеллы</h3>
-<ul>
+<ul id="profile-ul">
     <!-- Здесь будет список новелл пользователя -->
     <li>Новелла 1</li>
     <li>Новелла 2</li>

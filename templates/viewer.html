@@ -285,14 +285,14 @@ function showEndMessage(customMessage = null) {
             <p>${message}</p>
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button onclick="displayScene(0)" class="btn btn-primary">
-                    📖 Начать заново
+                     Начать заново
                 </button>
                 <button onclick="window.location.href='/'" class="btn btn-secondary">
-                    🏠 На главную
+                     На главную
                 </button>
                 {% if current_user.is_authenticated %}
                 <button onclick="window.location.href='/builder'" class="btn btn-success">
-                    ✍️ Создать свою
+                     Создать свою
                 </button>
                 {% endif %}
             </div>

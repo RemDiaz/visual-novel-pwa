@@ -13,31 +13,31 @@
     <header>
         <nav>
             <a href="/" class="nav-brand">
-                📖 Визуальные новеллы
+                 Визуальные новеллы
             </a>
             <div class="nav-links">
                 <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>
-                    🏠 Главная
+                     Главная
                 </a>
                 {% if current_user.is_authenticated %}
                     <a href="/builder" {% if request.endpoint == 'builder' %}class="active"{% endif %}>
-                        ✍️ Создать
+                         Создать
                     </a>
                     <a href="/my_novels" {% if request.endpoint == 'my_novels' %}class="active"{% endif %}>
-                        📚 Мои новеллы
+                         Мои новеллы
                     </a>
                     <a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>
-                        👤 {{ current_user.nickname }}
+                         {{ current_user.nickname }}
                     </a>
                     <a href="/logout">
-                        🚪 Выйти
+                         Выйти
                     </a>
                 {% else %}
                     <a href="/login" {% if request.endpoint == 'login' %}class="active"{% endif %}>
-                        🔑 Войти
+                         Войти
                     </a>
                     <a href="/register" {% if request.endpoint == 'register' %}class="active"{% endif %}>
-                        📝 Регистрация
+                         Регистрация
                     </a>
                 {% endif %}
             </div>
