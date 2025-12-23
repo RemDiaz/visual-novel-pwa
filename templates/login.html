@@ -3,6 +3,8 @@
 {% block title %}Вход{% endblock %}
 
 {% block content %}
+<div class="profile-container">
+    <div class="profile-section">
 <h2>Вход в систему</h2>
 <form class="form1" method="POST" action="/login">
     <div>
@@ -13,7 +15,9 @@
         <label>Пароль:</label>
         <input type="password" name="password" required>
     </div>
-    <button class="btn1" type="submit">Войти</button>
+    <button class="btn btn-primary" type="submit">Войти</button>
 </form>
 <p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
+</div>
+</div>
 {% endblock %}
