@@ -448,7 +448,6 @@ display: block;
 }
 
 
-
 .featured-novels>h2{
     font-size: 2rem;
 }
@@ -463,6 +462,9 @@ display: block;
     object-fit: cover;
 }
 
+.editor-tools button[title="Выделение"]{
+    display:none
+}
 
 /* Адаптивность */
 @media (max-width: 768px) {
