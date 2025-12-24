@@ -3,16 +3,16 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/static/sw.js')
             .then(registration => {
-                console.log('✅ ServiceWorker зарегистрирован: ', registration.scope);
+                console.log(' ServiceWorker зарегистрирован: ', registration.scope);
                 
                 // Проверяем обновления Service Worker
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
-                    console.log('🔄 Обновление Service Worker найдено');
+                    console.log(' Обновление Service Worker найдено');
                     
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('🔄 Новый контент доступен!');
+                            console.log(' Новый контент доступен!');
                             // Можем показать уведомление пользователю
                             showUpdateNotification();
                         }
@@ -20,7 +20,7 @@ if ('serviceWorker' in navigator) {
                 });
             })
             .catch(err => {
-                console.log('❌ Ошибка регистрации ServiceWorker: ', err);
+                console.log(' Ошибка регистрации ServiceWorker: ', err);
             });
     });
 }
@@ -45,7 +45,7 @@ function installPWA() {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(choiceResult => {
             if (choiceResult.outcome === 'accepted') {
-                console.log('✅ Пользователь установил PWA');
+                console.log(' Пользователь установил PWA');
                 if (installButton) {
                     installButton.style.display = 'none';
                 }
@@ -77,12 +77,12 @@ function hideOfflineStatus() {
 
 // Проверка соединения
 window.addEventListener('online', () => {
-    console.log('✅ Соединение восстановлено');
+    console.log(' Соединение восстановлено');
     hideOfflineStatus();
 });
 
 window.addEventListener('offline', () => {
-    console.log('⚠️ Отсутствует интернет-соединение');
+    console.log(' Отсутствует интернет-соединение');
     showOfflineStatus();
 });
 
@@ -152,10 +152,10 @@ async function saveNovelOffline(novelData) {
             is_offline: true
         });
         
-        console.log('✅ Новелла сохранена для офлайн доступа');
+        console.log(' Новелла сохранена для офлайн доступа');
         return true;
     } catch (error) {
-        console.error('❌ Ошибка сохранения для офлайн:', error);
+        console.error(' Ошибка сохранения для офлайн:', error);
         return false;
     }
 }
@@ -173,7 +173,7 @@ async function getOfflineNovels() {
             request.onerror = () => reject(request.error);
         });
     } catch (error) {
-        console.error('❌ Ошибка получения офлайн новелл:', error);
+        console.error(' Ошибка получения офлайн новелл:', error);
         return [];
     }
 }

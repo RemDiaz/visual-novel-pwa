@@ -21,7 +21,7 @@ class Utils {
         
         notification.innerHTML = `
             <div style="display: flex; align-items: center; gap: 10px;">
-                ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+                ${type === 'success' ? '' : type === 'error' ? '' : ''}
                 <span>${message}</span>
             </div>
         `;

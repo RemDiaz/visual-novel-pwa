@@ -7,7 +7,7 @@ class NovelViewer {
     }
     
     init() {
-        console.log('📖 Инициализация читалки новелл');
+        console.log(' Инициализация читалки новелл');
         
         const novelData = this.loadNovelData();
         this.scenesData = novelData.scenes || [];
@@ -231,13 +231,13 @@ class NovelViewer {
                 <p>${message}</p>
                 <div style="display: flex; gap: 10px; justify-content: center;">
                     <button onclick="novelViewer.displayScene(0)" class="btn btn-primary">
-                        📖 Начать заново
+                         Начать заново
                     </button>
                     <button onclick="window.location.href='/'" class="btn btn-secondary">
-                        🏠 На главную
+                         На главную
                     </button>
                     <button onclick="window.location.href='/builder'" class="btn btn-success">
-                        ✍️ Создать свою
+                         Создать свою
                     </button>
                 </div>
             </div>

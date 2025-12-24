@@ -11,20 +11,20 @@ const urlsToCache = [
 
 // Устанавливаем Service Worker
 self.addEventListener('install', event => {
-    console.log('🔄 Service Worker: Установка');
+    console.log(' Service Worker: Установка');
     
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('📦 Service Worker: Кеширование файлов');
+                console.log(' Service Worker: Кеширование файлов');
                 return cache.addAll(urlsToCache);
             })
             .then(() => {
-                console.log('✅ Service Worker: Установка завершена');
+                console.log(' Service Worker: Установка завершена');
                 return self.skipWaiting();
             })
             .catch(error => {
-                console.error('❌ Service Worker: Ошибка установки:', error);
+                console.error(' Service Worker: Ошибка установки:', error);
             })
     );
 });
@@ -44,7 +44,7 @@ self.addEventListener('activate', event => {
                 })
             );
         }).then(() => {
-            console.log('✅ Service Worker: Активация завершена');
+            console.log(' Service Worker: Активация завершена');
             return self.clients.claim();
         })
     );
@@ -99,13 +99,13 @@ self.addEventListener('fetch', event => {
                             caches.open(CACHE_NAME)
                                 .then(cache => {
                                     cache.put(event.request, responseToCache);
-                                    console.log('✅ Service Worker: Закеширован новый статический файл:', event.request.url);
+                                    console.log(' Service Worker: Закеширован новый статический файл:', event.request.url);
                                 });
                             
                             return response;
                         })
                         .catch(error => {
-                            console.error('❌ Service Worker: Ошибка загрузки статики:', error);
+                            console.error(' Service Worker: Ошибка загрузки статики:', error);
                             return new Response('Офлайн режим', {
                                 status: 503,
                                 headers: { 'Content-Type': 'text/plain' }
@@ -131,7 +131,7 @@ self.addEventListener('fetch', event => {
                 caches.open(CACHE_NAME)
                     .then(cache => {
                         cache.put(event.request, responseToCache);
-                        console.log('✅ Service Worker: Закеширована страница:', event.request.url);
+                        console.log(' Service Worker: Закеширована страница:', event.request.url);
                     });
                 
                 return response;
@@ -141,7 +141,7 @@ self.addEventListener('fetch', event => {
                 return caches.match(event.request)
                     .then(response => {
                         if (response) {
-                            console.log('📦 Service Worker: Используем кешированную страницу:', event.request.url);
+                            console.log(' Service Worker: Используем кешированную страницу:', event.request.url);
                             return response;
                         }
                         
@@ -168,7 +168,7 @@ self.addEventListener('fetch', event => {
 
 // Получение сообщений от клиента
 self.addEventListener('message', event => {
-    console.log('📨 Service Worker: Получено сообщение:', event.data);
+    console.log(' Service Worker: Получено сообщение:', event.data);
     
     if (event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
@@ -177,7 +177,7 @@ self.addEventListener('message', event => {
 
 // Фоновая синхронизация
 self.addEventListener('sync', event => {
-    console.log('🔄 Service Worker: Фоновая синхронизация:', event.tag);
+    console.log(' Service Worker: Фоновая синхронизация:', event.tag);
     
     if (event.tag === 'sync-novels') {
         event.waitUntil(syncNovels());
@@ -235,17 +235,17 @@ async function syncNovels() {
         
         return Promise.resolve();
     } catch (error) {
-        console.error('❌ Service Worker: Ошибка синхронизации:', error);
+        console.error(' Service Worker: Ошибка синхронизации:', error);
         return Promise.reject(error);
     }
 }
 
 // Обработка ошибок Service Worker
 self.addEventListener('error', event => {
-    console.error('❌ Service Worker: Ошибка:', event.error);
+    console.error(' Service Worker: Ошибка:', event.error);
 });
 
 // Обработка reject промисов
 self.addEventListener('unhandledrejection', event => {
-    console.error('❌ Service Worker: Необработанный rejection:', event.reason);
+    console.error(' Service Worker: Необработанный rejection:', event.reason);
 });

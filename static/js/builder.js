@@ -9,19 +9,19 @@ class NovelBuilder {
         this.activeTool = 'select';
         this.draggingSprite = null;
         
-        console.log("🚀 Конструктор инициализирован, ID новеллы:", this.novelId);
+        console.log(" Конструктор инициализирован, ID новеллы:", this.novelId);
         
         this.init();
     }
     
     init() {
         if (this.novelId && this.novelId > 0) {
-            console.log("🔄 Загружаю данные новеллы...");
+            console.log(" Загружаю данные новеллы...");
             this.loadNovelData();
             this.setupEventListeners();
             this.setupDragAndDrop();
         } else if (this.novelId === 0 && window.location.pathname.includes('/builder/')) {
-            console.log("⚠️ Нет ID новеллы, перенаправляю...");
+            console.log(" Нет ID новеллы, перенаправляю...");
             window.location.href = '/builder';
         }
     }
@@ -154,7 +154,7 @@ class NovelBuilder {
     
     async loadNovelData() {
         try {
-            console.log(`📡 Запрос данных новеллы ${this.novelId}...`);
+            console.log(` Запрос данных новеллы ${this.novelId}...`);
             this.showLoading();
             
             const response = await fetch(`/api/novel/${this.novelId}`);
@@ -164,15 +164,15 @@ class NovelBuilder {
             
             const data = await response.json();
             
-            console.log("📦 Получены данные:", data);
+            console.log(" Получены данные:", data);
             
             if (data.error) {
-                this.showNotification('❌ Ошибка загрузки: ' + data.error, 'error');
+                this.showNotification(' Ошибка загрузки: ' + data.error, 'error');
                 return;
             }
             
             this.scenes = data.scenes || [];
-            console.log(`📚 Загружено ${this.scenes.length} сцен:`, this.scenes);
+            console.log(` Загружено ${this.scenes.length} сцен:`, this.scenes);
             
             // Обновляем UI
             this.updateNovelTitle(data.title);
@@ -186,18 +186,18 @@ class NovelBuilder {
             
             // Если есть сцены, показываем первую
             if (this.scenes.length > 0) {
-                console.log("🎯 Выбираю первую сцену");
+                console.log(" Выбираю первую сцену");
                 this.selectScene(0);
             } else {
-                console.log("➕ Нет сцен, создаю первую");
+                console.log(" Нет сцен, создаю первую");
                 this.addNewScene();
             }
             
-            console.log("✅ Данные успешно загружены");
+            console.log(" Данные успешно загружены");
             
         } catch (error) {
-            console.error('❌ Ошибка загрузки:', error);
-            this.showNotification('❌ Не удалось загрузить данные новеллы', 'error');
+            console.error(' Ошибка загрузки:', error);
+            this.showNotification(' Не удалось загрузить данные новеллы', 'error');
         } finally {
             this.hideLoading();
         }
@@ -297,7 +297,7 @@ class NovelBuilder {
         this.choices = Array.isArray(scene.choices) ? scene.choices : [];
         this.renderChoicesList();
         
-        console.log(`✅ Сцена ${index} загружена`);
+        console.log(` Сцена ${index} загружена`);
     }
     
     renderCanvasSprites() {
@@ -370,7 +370,7 @@ class NovelBuilder {
             this.renderCanvasSprites();
             this.renderSpritesList();
 
-            this.showNotification(`🗑️ Спрайт "${sprite.name}" удалён`, 'info');
+            this.showNotification(` Спрайт "${sprite.name}" удалён`, 'info');
         });
 
         container.appendChild(spriteElement);
@@ -509,7 +509,7 @@ class NovelBuilder {
             document.getElementById('scene-name').focus();
         }, 100);
         
-        this.showNotification('✅ Новая сцена добавлена', 'success');
+        this.showNotification(' Новая сцена добавлена', 'success');
     }
     
     updateSceneName(index, name) {
@@ -521,7 +521,7 @@ class NovelBuilder {
     
     saveCurrentScene() {
         if (this.currentSceneIndex === -1) {
-            this.showNotification('⚠️ Сначала выберите или создайте сцену', 'info');
+            this.showNotification(' Сначала выберите или создайте сцену', 'info');
             return;
         }
         
@@ -531,7 +531,7 @@ class NovelBuilder {
         scene.choices = [...this.choices];
         scene.sprites = this.currentSprites.filter(s => s.isOnCanvas);
         
-        console.log(`💾 Сохранение сцены ${this.currentSceneIndex}:`, {
+        console.log(` Сохранение сцены ${this.currentSceneIndex}:`, {
             name: scene.name,
             textLength: scene.text.length,
             choices: scene.choices.length,
@@ -541,12 +541,12 @@ class NovelBuilder {
         // Обновляем отображение в списке
         this.renderSceneList();
         
-        this.showNotification('✅ Сцена сохранена!', 'success');
+        this.showNotification(' Сцена сохранена!', 'success');
     }
     
     async saveNovel() {
         try {
-            console.log("💾 Начинаю сохранение новеллы...");
+            console.log(" Начинаю сохранение новеллы...");
             
             // Сначала сохраняем текущую сцену
             this.saveCurrentScene();
@@ -554,7 +554,7 @@ class NovelBuilder {
             const saveBtn = document.getElementById('save-btn');
             const originalText = saveBtn.innerHTML;
             saveBtn.disabled = true;
-            saveBtn.innerHTML = '⏳ Сохранение...';
+            saveBtn.innerHTML = ' Сохранение...';
             
             const novelData = {
                 title: document.getElementById('novel-title').value,
@@ -591,25 +591,25 @@ class NovelBuilder {
             console.log("📥 Ответ от сервера:", data);
             
             if (data.success) {
-                this.showNotification('✅ Новелла сохранена!', 'success');
+                this.showNotification(' Новелла сохранена!', 'success');
                 this.updateNovelTitle(novelData.title);
                 this.updatePublishStatus(novelData.is_published);
                 
                 // Обновляем кнопку публикации
                 const publishBtn = document.getElementById('publish-btn');
-                publishBtn.innerHTML = novelData.is_published ? '✅ Опубликовано' : '📢 Опубликовать';
+                publishBtn.innerHTML = novelData.is_published ? ' Опубликовано' : ' Опубликовать';
                 
             } else {
-                this.showNotification('❌ Ошибка: ' + data.error, 'error');
+                this.showNotification(' Ошибка: ' + data.error, 'error');
             }
             
         } catch (error) {
-            console.error('❌ Ошибка сохранения:', error);
-            this.showNotification('❌ Ошибка сети при сохранении', 'error');
+            console.error(' Ошибка сохранения:', error);
+            this.showNotification(' Ошибка сети при сохранении', 'error');
         } finally {
             const saveBtn = document.getElementById('save-btn');
             saveBtn.disabled = false;
-            saveBtn.innerHTML = '💾 Сохранить';
+            saveBtn.innerHTML = ' Сохранить';
         }
     }
     
@@ -625,21 +625,21 @@ class NovelBuilder {
             const data = await response.json();
             
             if (data.success) {
-                this.showNotification('🎉 Новелла опубликована!', 'success');
+                this.showNotification(' Новелла опубликована!', 'success');
                 this.updatePublishStatus(true);
                 document.getElementById('novel-published').checked = true;
                 
                 const publishBtn = document.getElementById('publish-btn');
-                publishBtn.innerHTML = '✅ Опубликовано';
+                publishBtn.innerHTML = ' Опубликовано';
                 publishBtn.disabled = true;
                 
             } else {
-                this.showNotification('❌ Ошибка публикации: ' + data.error, 'error');
+                this.showNotification(' Ошибка публикации: ' + data.error, 'error');
             }
             
         } catch (error) {
             console.error('Ошибка публикации:', error);
-            this.showNotification('❌ Ошибка сети при публикации', 'error');
+            this.showNotification(' Ошибка сети при публикации', 'error');
         }
     }
     
@@ -650,10 +650,10 @@ class NovelBuilder {
                 // Открываем предпросмотр в новой вкладке
                 window.open(`/view/${this.novelId}`, '_blank');
             }).catch(error => {
-                this.showNotification('❌ Ошибка при сохранении перед предпросмотром', 'error');
+                this.showNotification(' Ошибка при сохранении перед предпросмотром', 'error');
             });
         } else {
-            this.showNotification('❌ Сначала сохраните новеллу', 'error');
+            this.showNotification(' Сначала сохраните новеллу', 'error');
         }
     }
     
@@ -664,12 +664,12 @@ class NovelBuilder {
         
         const file = files[0];
         if (!file.type.startsWith('image/')) {
-            this.showNotification('❌ Пожалуйста, выберите изображение', 'error');
+            this.showNotification(' Пожалуйста, выберите изображение', 'error');
             return;
         }
         
         if (file.size > 5 * 1024 * 1024) {
-            this.showNotification('❌ Файл слишком большой (макс. 5MB)', 'error');
+            this.showNotification(' Файл слишком большой (макс. 5MB)', 'error');
             return;
         }
         
@@ -697,7 +697,7 @@ class NovelBuilder {
                 </div>
             `;
             
-            this.showNotification('✅ Фон загружен успешно', 'success');
+            this.showNotification(' Фон загружен успешно', 'success');
         };
         reader.readAsDataURL(file);
     }
@@ -708,7 +708,7 @@ class NovelBuilder {
             if (!file.type.startsWith('image/')) continue;
             
             if (file.size > 3 * 1024 * 1024) {
-                this.showNotification(`❌ Файл "${file.name}" слишком большой`, 'error');
+                this.showNotification(` Файл "${file.name}" слишком большой`, 'error');
                 continue;
             }
             
@@ -726,7 +726,7 @@ class NovelBuilder {
                 
                 this.currentSprites.push(sprite);
                 this.renderSpritesList();
-                this.showNotification(`✅ Спрайт "${sprite.name}" добавлен`, 'success');
+                this.showNotification(` Спрайт "${sprite.name}" добавлен`, 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -789,7 +789,7 @@ class NovelBuilder {
             this.scenes[this.currentSceneIndex].sprites = this.currentSprites.filter(s => s.isOnCanvas);
         }
         
-        this.showNotification(`✅ Спрайт "${name}" добавлен на сцену`, 'success');
+        this.showNotification(` Спрайт "${name}" добавлен на сцену`, 'success');
     }
     
     // ========== УПРАВЛЕНИЕ СПРАЙТАМИ ==========
@@ -844,7 +844,7 @@ class NovelBuilder {
     
     addNewChoice() {
         if (this.currentSceneIndex === -1) {
-            this.showNotification('⚠️ Сначала выберите или создайте сцену', 'info');
+            this.showNotification(' Сначала выберите или создайте сцену', 'info');
             return;
         }
         
@@ -924,7 +924,7 @@ class NovelBuilder {
         }
         
         this.renderSceneList();
-        this.showNotification('🗑️ Сцена удалена', 'info');
+        this.showNotification(' Сцена удалена', 'info');
     }
     
     // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
@@ -966,7 +966,7 @@ class NovelBuilder {
         
         notification.innerHTML = `
             <div style="display: flex; align-items: center; gap: 10px;">
-                ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+                ${type === 'success' ? '' : type === 'error' ? '' : ''}
                 <span>${message}</span>
             </div>
         `;
