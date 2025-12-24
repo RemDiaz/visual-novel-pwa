@@ -222,7 +222,7 @@ class NovelViewer {
     }
     
     showEndMessage(customMessage = null) {
-        const message = customMessage || '🎉 Поздравляем! Вы дочитали новеллу до конца.';
+        const message = customMessage || ' Поздравляем! Вы дочитали новеллу до конца.';
         
         document.getElementById('scene-sprites-container').innerHTML = '';
         document.getElementById('scene-display').innerHTML = `
