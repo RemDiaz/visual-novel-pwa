@@ -301,57 +301,87 @@ class NovelBuilder {
     }
     
     renderCanvasSprites() {
-        const container = document.getElementById('sprites-container');
-        if (!container) return;
-        
-        container.innerHTML = '';
-        
-        const canvasSprites = this.currentSprites.filter(s => s.isOnCanvas);
-        canvasSprites.sort((a, b) => a.zIndex - b.zIndex);
-        
-        canvasSprites.forEach(sprite => {
-            const spriteElement = document.createElement('div');
-            spriteElement.className = 'sprite-item';
-            spriteElement.id = 'sprite-' + sprite.id;
-            spriteElement.style.cssText = `
-                position: absolute;
-                left: ${sprite.x}px;
-                top: ${sprite.y}px;
-                width: ${sprite.width}px;
-                height: ${sprite.height}px;
-                transform: rotate(${sprite.rotation}deg);
-                z-index: ${sprite.zIndex};
-                cursor: ${this.activeTool === 'move' ? 'move' : 'default'};
-            `;
-            
-            spriteElement.innerHTML = `
-                <img src="${sprite.url}" alt="${sprite.name}" 
-                     class="sprite-image" 
-                     style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">
-                <div class="sprite-label">${sprite.name}</div>
-            `;
-            
-            // Настройка перетаскивания
-            spriteElement.draggable = this.activeTool === 'move';
-            spriteElement.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('sprite/canvas-id', sprite.id);
-                this.draggingSprite = sprite;
-            });
-            
-            // Настройка перемещения мышью
-            if (this.activeTool === 'move') {
-                this.makeDraggable(spriteElement, sprite);
-            }
-            
-            container.appendChild(spriteElement);
+    const container = document.getElementById('sprites-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const canvasSprites = this.currentSprites.filter(s => s.isOnCanvas);
+    canvasSprites.sort((a, b) => a.zIndex - b.zIndex);
+
+    canvasSprites.forEach(sprite => {
+        const spriteElement = document.createElement('div');
+        spriteElement.className = 'sprite-item';
+        spriteElement.id = 'sprite-' + sprite.id;
+
+        spriteElement.style.cssText = `
+            position: absolute;
+            left: ${sprite.x}px;
+            top: ${sprite.y}px;
+            width: ${sprite.width}px;
+            height: ${sprite.height}px;
+            transform: rotate(${sprite.rotation}deg);
+            z-index: ${sprite.zIndex};
+            cursor: ${this.activeTool === 'move'
+                ? 'move'
+                : this.activeTool === 'delete'
+                ? 'not-allowed'
+                : 'default'};
+        `;
+
+        spriteElement.innerHTML = `
+            <img src="${sprite.url}" alt="${sprite.name}"
+                 class="sprite-image"
+                 style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">
+            <div class="sprite-label">${sprite.name}</div>
+        `;
+
+        // Drag & Drop (HTML5)
+        spriteElement.draggable = this.activeTool === 'move';
+        spriteElement.addEventListener('dragstart', (e) => {
+            if (this.activeTool !== 'move') return;
+            e.dataTransfer.setData('sprite/canvas-id', sprite.id);
+            this.draggingSprite = sprite;
         });
-        
-        // Показываем/скрываем подсказку
-        const hint = document.getElementById('canvas-hint');
-        if (hint) {
-            hint.style.display = canvasSprites.length === 0 ? 'block' : 'none';
+
+        // Перемещение мышью
+        if (this.activeTool === 'move') {
+            this.makeDraggable(spriteElement, sprite);
         }
+
+        // ===== УДАЛЕНИЕ СПРАЙТА =====
+        spriteElement.addEventListener('click', (e) => {
+            if (this.activeTool !== 'delete') return;
+
+            e.stopPropagation();
+            e.preventDefault();
+
+            if (!confirm(`Удалить спрайт "${sprite.name}"?`)) return;
+
+            // Удаляем из всех спрайтов
+            this.currentSprites = this.currentSprites.filter(s => s.id !== sprite.id);
+
+            // Обновляем сцену
+            if (this.currentSceneIndex !== -1) {
+                this.scenes[this.currentSceneIndex].sprites =
+                    this.currentSprites.filter(s => s.isOnCanvas);
+            }
+
+            this.renderCanvasSprites();
+            this.renderSpritesList();
+
+            this.showNotification(`🗑️ Спрайт "${sprite.name}" удалён`, 'info');
+        });
+
+        container.appendChild(spriteElement);
+    });
+
+    // Подсказка на пустом холсте
+    const hint = document.getElementById('canvas-hint');
+    if (hint) {
+        hint.style.display = canvasSprites.length === 0 ? 'block' : 'none';
     }
+}
     
     renderSpritesList() {
         const spritesList = document.getElementById('sprites-list');
